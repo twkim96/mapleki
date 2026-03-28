@@ -91,6 +91,19 @@ export default function ShareButton({
   const displayTitle = record.title || "기록";
   const powerLabel = isServerContent ? "전투력 순위 (서버)" : "전투력 순위 (길드)";
 
+  const validRanks = sheetData
+    .filter(r => r.content_rank !== null && r.content_rank !== -1)
+    .map(r => r.content_rank as number);
+    
+  const getGuildContentRank = (cr: number | null) => {
+    if (cr === null || cr === -1) return null;
+    let rank = 1;
+    for (const r of validRanks) {
+      if (r < cr) rank++;
+    }
+    return rank;
+  };
+
   // RecordViewer와 동일한 row 데이터 구성 (빈 row 제거)
   const rows = sheetData.map((row, idx) => {
     const rankDiff = (row.power_rank !== null && row.content_rank !== null && row.content_rank !== -1)
@@ -102,6 +115,7 @@ export default function ShareButton({
       powerRank: row.power_rank,
       characterName: row.character_name,
       contentRank: row.content_rank,
+      guildContentRank: getGuildContentRank(row.content_rank),
       rankDiff,
       isAbsent,
       grade: row.grade
@@ -120,31 +134,79 @@ export default function ShareButton({
     <table style={{ width: '100%', textAlign: 'center', borderCollapse: 'collapse', color: '#000000' }}>
       <thead>
         <tr style={{ backgroundColor: '#f1f5f9', borderBottom: '2px solid #94a3b8' }}>
-          <th style={{ ...thStyle, width: '36px', backgroundColor: '#e2e8f0' }}>#</th>
-          <th style={{ ...thStyle, width: '50px', backgroundColor: '#e2e8f0', lineHeight: '1.2' }}>
-            전투력<br/>순위
-          </th>
-          <th style={{ ...thStyle }}>캐릭터명</th>
-          <th style={{ ...thStyle, backgroundColor: '#eff6ff' }}>컨텐츠 등수</th>
-          <th style={{ ...thStyle, width: '64px' }}>등수 차이</th>
-          <th style={{ ...thStyle, width: '56px' }}>판정</th>
+          {isServerContent ? (
+            <>
+              <th style={{ ...thStyle, width: '38px', backgroundColor: '#e2e8f0', lineHeight: '1.2' }}>전체<br/>랭킹</th>
+              <th style={{ ...thStyle, width: '38px', backgroundColor: '#e2e8f0', lineHeight: '1.2' }}>길드<br/>랭킹</th>
+              <th style={{ ...thStyle }}>캐릭터명</th>
+              <th style={{ ...thStyle, width: '38px', backgroundColor: '#eff6ff', lineHeight: '1.2' }}>길드<br/>등수</th>
+              <th style={{ ...thStyle, width: '48px', backgroundColor: '#eff6ff', lineHeight: '1.2' }}>컨텐츠<br/>등수</th>
+              <th style={{ ...thStyle, width: '70px', lineHeight: '1.2' }}>등수 차이<br/><span style={{ fontSize: '9px', fontWeight: 'normal', opacity: 0.8 }}>(길드/컨텐츠)</span></th>
+              <th style={{ ...thStyle, width: '50px' }}>판정</th>
+            </>
+          ) : (
+            <>
+              <th style={{ ...thStyle, width: '36px', backgroundColor: '#e2e8f0' }}>#</th>
+              <th style={{ ...thStyle, width: '50px', backgroundColor: '#e2e8f0', lineHeight: '1.2' }}>전투력<br/>순위</th>
+              <th style={{ ...thStyle }}>캐릭터명</th>
+              <th style={{ ...thStyle, backgroundColor: '#eff6ff' }}>컨텐츠 등수</th>
+              <th style={{ ...thStyle, width: '64px' }}>등수 차이</th>
+              <th style={{ ...thStyle, width: '56px' }}>판정</th>
+            </>
+          )}
         </tr>
       </thead>
       <tbody>
         {tableRows.map((row) => (
           <tr key={row.idx} style={{ borderBottom: '1px solid #e2e8f0' }}>
-            <td style={{ ...tdStyle, backgroundColor: '#f1f5f9', fontWeight: 'bold', color: '#94a3b8' }}>{row.idx}</td>
-            <td style={{ ...tdStyle, fontWeight: 'bold', color: '#334155', textAlign: 'center' }}>{row.powerRank ?? '-'}</td>
-            <td style={{ ...tdStyle, fontWeight: 'bold', color: '#0f172a', textAlign: 'left', paddingLeft: '10px' }}>{row.characterName}</td>
-            <td style={{ ...tdStyle, backgroundColor: '#f0f9ff', fontWeight: 'bold', color: row.isAbsent ? '#94a3b8' : '#2563eb' }}>
-              {row.isAbsent ? '미참여' : (row.contentRank ?? '-')}
-            </td>
-            <td style={{ ...tdStyle, ...(row.rankDiff !== null ? getDiffStyle(row.rankDiff) : { color: '#cbd5e1' }) }}>
-              {row.rankDiff !== null ? (row.rankDiff > 0 ? `+${row.rankDiff}` : row.rankDiff) : '-'}
-            </td>
-            <td style={{ ...tdStyle, ...(row.grade ? getGradeStyle(row.grade) : { color: '#cbd5e1' }), borderRadius: '0' }}>
-              {row.isAbsent ? '-' : (row.grade || '-')}
-            </td>
+            {isServerContent ? (
+              <>
+                <td style={{ ...tdStyle, fontWeight: 'bold', color: '#334155', textAlign: 'center' }}>{row.powerRank ?? '-'}</td>
+                <td style={{ ...tdStyle, backgroundColor: '#f1f5f9', fontWeight: 'bold', color: '#94a3b8' }}>{row.idx}</td>
+                <td style={{ ...tdStyle, fontWeight: 'bold', color: '#0f172a', textAlign: 'left', paddingLeft: '10px', fontSize: '14px' }}>{row.characterName}</td>
+                <td style={{ ...tdStyle, backgroundColor: '#f0f9ff', fontWeight: 'bold', color: row.isAbsent ? '#94a3b8' : '#2563eb' }}>
+                  {row.isAbsent ? '미참' : (row.guildContentRank ?? '-')}
+                </td>
+                <td style={{ ...tdStyle, backgroundColor: '#f0f9ff', fontWeight: 'bold', color: row.isAbsent ? '#94a3b8' : '#2563eb' }}>
+                  {row.isAbsent ? '-' : (row.contentRank ?? '-')}
+                </td>
+                <td style={{ ...tdStyle, ...(row.rankDiff !== null && !row.isAbsent ? { fontWeight: 'bold' } : { color: '#cbd5e1' }) }}>
+                  {!row.isAbsent ? (() => {
+                    const guildRank = row.idx;
+                    const guildContentRank = row.guildContentRank!;
+                    const guildDiff = guildRank - guildContentRank;
+                    const serverDiff = row.rankDiff;
+                    return (
+                      <span style={{ lineHeight: '1.1' }}>
+                        <span style={guildDiff >= 0 ? { color: "#10b981" } : { color: "#ef4444" }}>{guildDiff > 0 ? `+${guildDiff}` : guildDiff}</span>
+                        <span style={{ color: '#cbd5e1', margin: '0 3px' }}>/</span>
+                        {serverDiff !== null && (
+                          <span style={serverDiff >= 0 ? { color: "#10b981" } : { color: "#ef4444" }}>{serverDiff > 0 ? `+${serverDiff}` : serverDiff}</span>
+                        )}
+                      </span>
+                    )
+                  })() : '-'}
+                </td>
+                <td style={{ ...tdStyle, ...(row.grade && !row.isAbsent ? getGradeStyle(row.grade) : { color: '#cbd5e1' }), borderRadius: '0', fontSize: '12px' }}>
+                  {row.isAbsent ? '-' : (row.grade || '-')}
+                </td>
+              </>
+            ) : (
+              <>
+                <td style={{ ...tdStyle, backgroundColor: '#f1f5f9', fontWeight: 'bold', color: '#94a3b8' }}>{row.idx}</td>
+                <td style={{ ...tdStyle, fontWeight: 'bold', color: '#334155', textAlign: 'center' }}>{row.powerRank ?? '-'}</td>
+                <td style={{ ...tdStyle, fontWeight: 'bold', color: '#0f172a', textAlign: 'left', paddingLeft: '10px', fontSize: '14px' }}>{row.characterName}</td>
+                <td style={{ ...tdStyle, backgroundColor: '#f0f9ff', fontWeight: 'bold', color: row.isAbsent ? '#94a3b8' : '#2563eb' }}>
+                  {row.isAbsent ? '미참여' : (row.contentRank ?? '-')}
+                </td>
+                <td style={{ ...tdStyle, ...(row.rankDiff !== null && !row.isAbsent ? getDiffStyle(row.rankDiff) : { color: '#cbd5e1' }) }}>
+                  {row.rankDiff !== null && !row.isAbsent ? (row.rankDiff > 0 ? `+${row.rankDiff}` : row.rankDiff) : '-'}
+                </td>
+                <td style={{ ...tdStyle, ...(row.grade && !row.isAbsent ? getGradeStyle(row.grade) : { color: '#cbd5e1' }), borderRadius: '0' }}>
+                  {row.isAbsent ? '-' : (row.grade || '-')}
+                </td>
+              </>
+            )}
           </tr>
         ))}
       </tbody>

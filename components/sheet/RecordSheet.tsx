@@ -233,65 +233,153 @@ export default function RecordSheet({
 
       <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-[2.5rem] shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
+          <table className="w-full text-left border-collapse min-w-[600px]">
             <thead>
               <tr className="bg-slate-50 dark:bg-slate-950/50 text-[14px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                <th className="px-6 py-5 w-16 text-center">#</th>
-                <th className="px-4 py-5 w-20 text-center leading-tight">
-                  전투력<br/>순위
-                </th>
-                <th className="px-6 py-5">캐릭터명</th>
-                <th className="px-6 py-5 w-32 border-l border-slate-200 dark:border-slate-800 bg-blue-50/50 dark:bg-blue-900/10">컨텐츠 등수</th>
-                <th className="px-6 py-5 w-32">등수 차이</th>
-                <th className="px-6 py-5 w-32">판정</th>
+                {isServerContent ? (
+                  <>
+                    <th className="px-3 py-4 w-16 text-center leading-tight">전체<br/>랭킹</th>
+                    <th className="px-3 py-4 w-16 text-center leading-tight">길드<br/>랭킹</th>
+                    <th className="px-4 py-4 min-w-[120px]">캐릭터명</th>
+                    <th className="px-3 py-4 w-16 text-center leading-tight border-l border-slate-200 dark:border-slate-800 bg-blue-50/50 dark:bg-blue-900/10">길드<br/>등수</th>
+                    <th className="px-3 py-4 w-20 text-center leading-tight bg-blue-50/50 dark:bg-blue-900/10">컨텐츠<br/>등수</th>
+                    <th className="px-2 py-4 w-28 text-center leading-tight">등수 차이<br/><span className="text-[10px] opacity-80 decoration-none font-medium">(길드/컨텐츠)</span></th>
+                    <th className="px-3 py-4 w-16 text-center">판정</th>
+                  </>
+                ) : (
+                  <>
+                    <th className="px-6 py-5 w-16 text-center">#</th>
+                    <th className="px-4 py-5 w-20 text-center leading-tight">전투력<br/>순위</th>
+                    <th className="px-6 py-5 min-w-[120px]">캐릭터명</th>
+                    <th className="px-6 py-5 w-32 border-l border-slate-200 dark:border-slate-800 bg-blue-50/50 dark:bg-blue-900/10">컨텐츠 등수</th>
+                    <th className="px-6 py-5 w-32 text-center">등수 차이</th>
+                    <th className="px-6 py-5 w-24 text-center">판정</th>
+                  </>
+                )}
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 dark:divide-slate-800 text-[15px]">
-              {rows.map((row, idx) => (
-                <tr key={idx} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
-                  <td className="px-6 py-3 text-center text-slate-400 font-medium">{idx + 1}</td>
-                  <td className="px-6 py-3 text-center">
-                    <input 
-                      type="number" 
-                      value={row.power_rank ?? ''} 
-                      onChange={(e) => handleRowChange(idx, 'power_rank', e.target.value)} 
-                      className="w-full bg-transparent border-none rounded focus:ring-2 focus:ring-blue-500 font-bold text-center" 
-                    />
-                  </td>
-                  <td className="px-6 py-3">
-                    <input type="text" value={row.character_name} onChange={(e) => handleRowChange(idx, 'character_name', e.target.value)} className="w-full px-3 py-2 bg-transparent border-none rounded focus:ring-2 focus:ring-blue-500 text-slate-900 dark:text-slate-100 font-medium" />
-                  </td>
-                  <td className="px-6 py-3 border-l border-slate-200 dark:border-slate-800 bg-blue-50/30 dark:bg-blue-900/5">
-                    <input
-                      type="number"
-                      value={row.content_rank === -1 ? '' : (row.content_rank ?? '')}
-                      onChange={(e) => handleRowChange(idx, 'content_rank', e.target.value)}
-                      placeholder="수동입력 (빈칸=미참여)"
-                      className="w-full px-3 py-2 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-blue-500 text-blue-600 dark:text-blue-400 font-bold text-center"
-                    />
-                  </td>
-                  <td className="px-6 py-3 text-center font-bold">
-                    {row.rank_diff !== null && (
-                      <span className={row.rank_diff >= 0 ? "text-emerald-500" : "text-red-500"}>
-                        {row.rank_diff > 0 ? `+${row.rank_diff}` : row.rank_diff}
-                      </span>
-                    )}
-                  </td>
-                  <td className="px-6 py-3 text-center">
-                    {row.grade && (
-                      <span className={`px-3 py-1 rounded-full text-[13px] font-bold ${
-                        row.grade === "양호" 
-                          ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400" 
-                          : row.grade === "주의"
-                          ? "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400"
-                          : "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
-                      }`}>
-                        {row.grade}
-                      </span>
-                    )}
-                  </td>
-                </tr>
-              ))}
+              {(() => {
+                const validRanks = rows
+                  .filter(r => r.content_rank !== null && r.content_rank !== -1)
+                  .map(r => r.content_rank as number);
+                const getGuildContentRank = (cr: number | null) => {
+                  if (cr === null || cr === -1) return null;
+                  let rank = 1;
+                  for (const r of validRanks) {
+                    if (r < cr) rank++;
+                  }
+                  return rank;
+                };
+
+                return rows.map((row, idx) => {
+                  const isAbsent = row.content_rank === -1;
+                  
+                  if (isServerContent) {
+                    return (
+                      <tr key={idx} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                        <td className="px-3 py-3 text-center">
+                          <input 
+                            type="number" 
+                            value={row.power_rank ?? ''} 
+                            onChange={(e) => handleRowChange(idx, 'power_rank', e.target.value)} 
+                            className="w-full bg-transparent border-none rounded focus:ring-2 focus:ring-blue-500 font-bold text-center" 
+                          />
+                        </td>
+                        <td className="px-3 py-3 text-center text-slate-500 font-bold">{idx + 1}</td>
+                        <td className="px-4 py-3">
+                          <input type="text" value={row.character_name} onChange={(e) => handleRowChange(idx, 'character_name', e.target.value)} className="w-full px-2 py-2 bg-transparent border-none rounded focus:ring-2 focus:ring-blue-500 text-slate-900 dark:text-slate-100 font-medium" />
+                        </td>
+                        <td className="px-3 py-3 text-center font-bold text-blue-600 dark:text-blue-400 border-l border-slate-200 dark:border-slate-800 bg-blue-50/10 dark:bg-blue-900/5">
+                          {isAbsent ? <span className="text-slate-400 text-sm font-medium">미참여</span> : (getGuildContentRank(row.content_rank) ?? '-')}
+                        </td>
+                        <td className="px-3 py-3 bg-blue-50/10 dark:bg-blue-900/5">
+                          <input
+                            type="number"
+                            value={isAbsent ? '' : (row.content_rank ?? '')}
+                            onChange={(e) => handleRowChange(idx, 'content_rank', e.target.value)}
+                            placeholder="빈칸=미참여"
+                            className="w-full px-2 py-2 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-blue-500 text-blue-600 dark:text-blue-400 font-bold text-center text-sm"
+                          />
+                        </td>
+                        <td className="px-2 py-3 text-center font-bold text-sm">
+                          {row.rank_diff !== null && !isAbsent ? (() => {
+                            const guildRank = idx + 1;
+                            const guildContentRank = getGuildContentRank(row.content_rank)!;
+                            const guildDiff = guildRank - guildContentRank;
+                            const serverDiff = row.rank_diff;
+                            return (
+                              <div className="flex flex-col md:flex-row items-center justify-center gap-1">
+                                <span className={guildDiff >= 0 ? "text-emerald-500" : "text-red-500"}>{guildDiff > 0 ? `+${guildDiff}` : guildDiff}</span>
+                                <span className="text-slate-300 hidden md:inline">/</span>
+                                <span className={serverDiff >= 0 ? "text-emerald-500" : "text-red-500"}>{serverDiff > 0 ? `+${serverDiff}` : serverDiff}</span>
+                              </div>
+                            )
+                          })() : null}
+                        </td>
+                        <td className="px-3 py-3 text-center">
+                          {row.grade && !isAbsent && (
+                            <span className={`px-2 py-1 rounded-full text-[12px] font-bold whitespace-nowrap ${
+                              row.grade === "양호" 
+                                ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400" 
+                                : row.grade === "주의"
+                                ? "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400"
+                                : "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
+                            }`}>
+                              {row.grade}
+                            </span>
+                          )}
+                        </td>
+                      </tr>
+                    );
+                  }
+                  return (
+                    <tr key={idx} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                      <td className="px-6 py-3 text-center text-slate-400 font-medium">{idx + 1}</td>
+                      <td className="px-6 py-3 text-center">
+                        <input 
+                          type="number" 
+                          value={row.power_rank ?? ''} 
+                          onChange={(e) => handleRowChange(idx, 'power_rank', e.target.value)} 
+                          className="w-full bg-transparent border-none rounded focus:ring-2 focus:ring-blue-500 font-bold text-center" 
+                        />
+                      </td>
+                      <td className="px-6 py-3">
+                        <input type="text" value={row.character_name} onChange={(e) => handleRowChange(idx, 'character_name', e.target.value)} className="w-full px-3 py-2 bg-transparent border-none rounded focus:ring-2 focus:ring-blue-500 text-slate-900 dark:text-slate-100 font-medium" />
+                      </td>
+                      <td className="px-6 py-3 border-l border-slate-200 dark:border-slate-800 bg-blue-50/30 dark:bg-blue-900/5">
+                        <input
+                          type="number"
+                          value={isAbsent ? '' : (row.content_rank ?? '')}
+                          onChange={(e) => handleRowChange(idx, 'content_rank', e.target.value)}
+                          placeholder="수동입력 (빈칸=미참여)"
+                          className="w-full px-3 py-2 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-blue-500 text-blue-600 dark:text-blue-400 font-bold text-center"
+                        />
+                      </td>
+                      <td className="px-6 py-3 text-center font-bold">
+                        {row.rank_diff !== null && !isAbsent && (
+                          <span className={row.rank_diff >= 0 ? "text-emerald-500" : "text-red-500"}>
+                            {row.rank_diff > 0 ? `+${row.rank_diff}` : row.rank_diff}
+                          </span>
+                        )}
+                      </td>
+                      <td className="px-6 py-3 text-center">
+                        {row.grade && !isAbsent && (
+                          <span className={`px-3 py-1 rounded-full text-[13px] font-bold whitespace-nowrap ${
+                            row.grade === "양호" 
+                              ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400" 
+                              : row.grade === "주의"
+                              ? "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400"
+                              : "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
+                          }`}>
+                            {row.grade}
+                          </span>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                });
+              })()}
             </tbody>
           </table>
         </div>
