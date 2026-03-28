@@ -29,11 +29,11 @@ export default function DeleteContentButton({ contentId, contentName }: { conten
   return (
     <button
       onClick={handleDelete}
-      disabled={deleting}
-      className="flex items-center gap-2 px-5 py-3 rounded-2xl bg-red-50 text-red-600 hover:bg-red-100 dark:bg-red-900/20 dark:text-red-400 dark:hover:bg-red-900/40 transition-colors font-bold text-[14px] disabled:opacity-50"
+      title="컨텐츠 삭제"
+      className="group flex items-center h-[42px] max-w-[42px] hover:max-w-[200px] px-[11px] rounded-xl bg-red-50 text-red-600 hover:bg-red-100 dark:bg-red-900/20 dark:text-red-400 dark:hover:bg-red-900/40 transition-all duration-300 overflow-hidden disabled:opacity-50"
     >
-      {deleting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
-      컨텐츠 삭제
+      {deleting ? <Loader2 className="w-5 h-5 flex-shrink-0 animate-spin" /> : <Trash2 className="w-5 h-5 flex-shrink-0" />}
+      <span className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap text-[14px] font-bold ml-2">컨텐츠 삭제</span>
     </button>
   );
 }

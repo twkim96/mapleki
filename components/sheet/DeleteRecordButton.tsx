@@ -28,9 +28,10 @@ export default function DeleteRecordButton({ recordId, contentId }: { recordId: 
       onClick={handleDelete}
       disabled={deleting}
       title="기록 삭제"
-      className="flex items-center justify-center w-[42px] h-[42px] rounded-xl bg-red-50 text-red-600 hover:bg-red-100 dark:bg-red-900/20 dark:text-red-400 dark:hover:bg-red-900/40 transition-colors disabled:opacity-50"
+      className="group flex items-center h-[42px] max-w-[42px] hover:max-w-[200px] px-[11px] rounded-xl bg-red-50 text-red-600 hover:bg-red-100 dark:bg-red-900/20 dark:text-red-400 dark:hover:bg-red-900/40 transition-all duration-300 overflow-hidden disabled:opacity-50"
     >
-      {deleting ? <Loader2 className="w-5 h-5 animate-spin" /> : <Trash2 className="w-5 h-5" />}
+      {deleting ? <Loader2 className="w-5 h-5 flex-shrink-0 animate-spin" /> : <Trash2 className="w-5 h-5 flex-shrink-0" />}
+      <span className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap text-[14px] font-bold ml-2">기록 삭제</span>
     </button>
   );
 }

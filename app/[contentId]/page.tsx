@@ -58,9 +58,13 @@ export default async function ContentPage({ params }: { params: Promise<{ conten
         <div className="flex items-center gap-3">
           {isLoggedIn && (
             <>
-              <Link href={`/${contentId}/new`} className="flex items-center gap-2 px-6 py-3 rounded-2xl bg-blue-600 text-white text-[15px] font-bold hover:bg-blue-700 active:scale-[0.98] transition-all shadow-sm shadow-blue-600/20">
-                <FilePlus2 className="w-5 h-5" />
-                <span>새 기록지 작성</span>
+              <Link
+                href={`/${contentId}/new`}
+                title="새 기록지 작성"
+                className="group flex items-center h-[42px] max-w-[42px] hover:max-w-[200px] px-[11px] rounded-xl bg-blue-600 text-white hover:bg-blue-700 transition-all duration-300 overflow-hidden shadow-sm shadow-blue-600/20"
+              >
+                <FilePlus2 className="w-5 h-5 flex-shrink-0" />
+                <span className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap text-[14px] font-bold ml-2">새 기록지 작성</span>
               </Link>
               <DeleteContentButton contentId={contentId} contentName={content.name} />
             </>

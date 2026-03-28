@@ -32,8 +32,13 @@ export default async function RecordDetailPage({ params }: { params: Promise<{ c
             <ShareButton contentName={content.name} record={record} sheetData={sheetData || []} isServerContent={content.is_server_content} />
             {isLoggedIn && (
               <>
-                <Link href={`/${contentId}/${recordId}/edit`} title="기록 수정하기" className="flex items-center justify-center w-[42px] h-[42px] rounded-xl bg-slate-100 text-slate-700 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700 transition-colors">
-                  <Edit3 className="w-5 h-5" />
+                <Link
+                  href={`/${contentId}/${recordId}/edit`}
+                  title="기록 수정하기"
+                  className="group flex items-center h-[42px] max-w-[42px] hover:max-w-[200px] px-[11px] rounded-xl bg-slate-100 text-slate-700 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700 transition-all duration-300 overflow-hidden"
+                >
+                  <Edit3 className="w-5 h-5 flex-shrink-0" />
+                  <span className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap text-[14px] font-bold ml-2">기록 수정하기</span>
                 </Link>
                 <DeleteRecordButton recordId={recordId} contentId={contentId} />
               </>

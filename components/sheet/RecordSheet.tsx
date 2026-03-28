@@ -203,9 +203,10 @@ export default function RecordSheet({
              <button 
                onClick={() => setShowModal(true)} 
                title="편하게 배정하기"
-               className="flex-none w-[42px] h-[42px] bg-amber-50 dark:bg-amber-900/20 hover:bg-amber-100 dark:hover:bg-amber-900/40 text-amber-700 dark:text-amber-400 rounded-xl transition-all active:scale-[0.98] flex items-center justify-center border border-amber-200 dark:border-amber-800"
+               className="group flex flex-none items-center h-[42px] max-w-[42px] hover:max-w-[200px] px-[11px] rounded-xl bg-amber-50 dark:bg-amber-900/20 hover:bg-amber-100 dark:hover:bg-amber-900/40 text-amber-700 dark:text-amber-400 transition-all duration-300 overflow-hidden border border-amber-200 dark:border-amber-800"
              >
-               ✨
+               <span className="w-5 h-5 flex-shrink-0 flex items-center justify-center text-lg">✨</span>
+               <span className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap text-[14px] font-bold ml-2 flex-shrink-0 relative pt-px">편하게 배정하기</span>
              </button>
           )}
 
@@ -213,18 +214,20 @@ export default function RecordSheet({
             onClick={handleLoadMembers}
             disabled={scraping}
             title="길드원 최신화"
-            className="flex-none w-[42px] h-[42px] bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-xl transition-all active:scale-[0.98] disabled:opacity-50 flex items-center justify-center border border-slate-200 dark:border-slate-700"
+            className="group flex flex-none items-center h-[42px] max-w-[42px] hover:max-w-[200px] px-[11px] rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 transition-all duration-300 overflow-hidden border border-slate-200 dark:border-slate-700 disabled:opacity-50"
           >
-            {scraping ? <Loader2 className="w-5 h-5 animate-spin" /> : <RefreshCw className="w-5 h-5" />}
+            {scraping ? <Loader2 className="w-5 h-5 flex-shrink-0 animate-spin" /> : <RefreshCw className="w-5 h-5 flex-shrink-0" />}
+            <span className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap text-[14px] font-bold ml-2 flex-shrink-0 relative pt-px">길드원 최신화</span>
           </button>
           
           <button
             onClick={handleSave}
             disabled={saving || scraping}
             title="기록 저장"
-            className="flex-none w-[42px] h-[42px] bg-blue-600 hover:bg-blue-700 text-white rounded-xl transition-all active:scale-[0.98] disabled:opacity-50 flex items-center justify-center shadow-sm shadow-blue-600/20"
+            className="group flex flex-none items-center h-[42px] max-w-[42px] hover:max-w-[200px] px-[11px] rounded-xl bg-blue-600 hover:bg-blue-700 text-white transition-all duration-300 overflow-hidden shadow-sm shadow-blue-600/20 disabled:opacity-50"
           >
-            {saving ? <Loader2 className="w-5 h-5 animate-spin" /> : <Save className="w-5 h-5" />}
+            {saving ? <Loader2 className="w-5 h-5 flex-shrink-0 animate-spin" /> : <Save className="w-5 h-5 flex-shrink-0" />}
+            <span className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap text-[14px] font-bold ml-2 flex-shrink-0 relative pt-px">기록 저장</span>
           </button>
         </div>
       </div>

@@ -216,9 +216,10 @@ export default function ShareButton({
       <button 
         onClick={() => setShowModal(true)}
         title="공유용 이미지"
-        className="flex items-center justify-center w-[42px] h-[42px] rounded-xl bg-blue-50 text-blue-600 hover:bg-blue-100 dark:bg-blue-900/40 dark:text-blue-400 dark:hover:bg-blue-900/60 transition-colors"
+        className="group flex items-center h-[42px] max-w-[42px] hover:max-w-[200px] px-[11px] rounded-xl bg-blue-50 text-blue-600 hover:bg-blue-100 dark:bg-blue-900/40 dark:text-blue-400 dark:hover:bg-blue-900/60 transition-all duration-300 overflow-hidden"
       >
-        <Camera className="w-5 h-5" />
+        <Camera className="w-5 h-5 flex-shrink-0" />
+        <span className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap text-[14px] font-bold ml-2 flex-shrink-0 relative pt-px">공유용 이미지</span>
       </button>
 
       {showModal && (
