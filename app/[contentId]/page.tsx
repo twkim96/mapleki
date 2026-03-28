@@ -50,12 +50,12 @@ export default async function ContentPage({ params }: { params: Promise<{ conten
 
   return (
     <div className="flex flex-col gap-8 max-w-5xl mx-auto py-4">
-      <div className="flex items-end justify-between border-b border-slate-200 dark:border-slate-800 pb-6">
+      <div className="flex flex-col md:flex-row items-start md:items-end justify-between border-b border-slate-200 dark:border-slate-800 pb-6 gap-4">
         <div>
-          <h2 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">{content.name}</h2>
+          <h2 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white break-keep">{content.name}</h2>
           <p className="text-slate-500 dark:text-slate-400 mt-2 text-[15px]">해당 컨텐츠의 모든 진행 결과를 확인하세요.</p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 w-full md:w-auto overflow-x-auto pb-1">
           {isLoggedIn && (
             <>
               <Link

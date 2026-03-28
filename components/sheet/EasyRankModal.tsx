@@ -27,11 +27,11 @@ function SortableItem({ id, character_name, index, onMoveUp, onMoveDown, onToggl
     <div
       ref={setNodeRef}
       style={style}
-      {...(absent ? {} : { ...attributes, ...listeners })}
-      className={`flex items-center gap-3 p-2.5 rounded-xl border shadow-sm mb-2 group touch-none select-none ${
+      {...(absent ? {} : attributes)}
+      className={`flex items-center gap-3 p-2.5 rounded-xl border shadow-sm mb-2 group select-none ${
         absent
           ? 'bg-slate-100 dark:bg-slate-800/50 border-slate-200 dark:border-slate-700 opacity-60 cursor-default'
-          : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 cursor-grab active:cursor-grabbing'
+          : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 cursor-default'
       }`}
     >
       {/* 미참여(X) 토글 버튼 */}
@@ -49,7 +49,10 @@ function SortableItem({ id, character_name, index, onMoveUp, onMoveDown, onToggl
       </button>
 
       {/* 드래그 핸들 */}
-      <div className={`p-1 ${absent ? 'text-slate-300 dark:text-slate-600' : 'text-slate-400 hover:text-blue-500'}`}>
+      <div 
+        {...(absent ? {} : listeners)}
+        className={`p-1 ${absent ? 'text-slate-300 dark:text-slate-600' : 'text-slate-400 hover:text-blue-500 cursor-grab active:cursor-grabbing touch-none'}`}
+      >
         <GripVertical className="w-5 h-5" />
       </div>
 

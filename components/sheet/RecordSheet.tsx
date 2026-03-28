@@ -349,7 +349,7 @@ export default function RecordSheet({
                           type="number"
                           value={isAbsent ? '' : (row.content_rank ?? '')}
                           onChange={(e) => handleRowChange(idx, 'content_rank', e.target.value)}
-                          placeholder="수동입력 (빈칸=미참여)"
+                          placeholder="수동 입력"
                           className="w-full px-3 py-2 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-blue-500 text-blue-600 dark:text-blue-400 font-bold text-center"
                         />
                       </td>
