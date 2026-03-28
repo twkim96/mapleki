@@ -121,7 +121,9 @@ export default function ShareButton({
       <thead>
         <tr style={{ backgroundColor: '#f1f5f9', borderBottom: '2px solid #94a3b8' }}>
           <th style={{ ...thStyle, width: '36px', backgroundColor: '#e2e8f0' }}>#</th>
-          <th style={{ ...thStyle }}>{powerLabel}</th>
+          <th style={{ ...thStyle, width: '50px', backgroundColor: '#e2e8f0', lineHeight: '1.2' }}>
+            전투력<br/>순위
+          </th>
           <th style={{ ...thStyle }}>캐릭터명</th>
           <th style={{ ...thStyle, backgroundColor: '#eff6ff' }}>컨텐츠 등수</th>
           <th style={{ ...thStyle, width: '64px' }}>등수 차이</th>
@@ -132,7 +134,7 @@ export default function ShareButton({
         {tableRows.map((row) => (
           <tr key={row.idx} style={{ borderBottom: '1px solid #e2e8f0' }}>
             <td style={{ ...tdStyle, backgroundColor: '#f1f5f9', fontWeight: 'bold', color: '#94a3b8' }}>{row.idx}</td>
-            <td style={{ ...tdStyle, fontWeight: 'bold', color: '#334155' }}>{row.powerRank ?? '-'}</td>
+            <td style={{ ...tdStyle, fontWeight: 'bold', color: '#334155', textAlign: 'center' }}>{row.powerRank ?? '-'}</td>
             <td style={{ ...tdStyle, fontWeight: 'bold', color: '#0f172a', textAlign: 'left', paddingLeft: '10px' }}>{row.characterName}</td>
             <td style={{ ...tdStyle, backgroundColor: '#f0f9ff', fontWeight: 'bold', color: row.isAbsent ? '#94a3b8' : '#2563eb' }}>
               {row.isAbsent ? '미참여' : (row.contentRank ?? '-')}

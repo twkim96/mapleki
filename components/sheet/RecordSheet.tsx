@@ -186,7 +186,7 @@ export default function RecordSheet({
 
   return (
     <div className="flex flex-col gap-8 max-w-7xl mx-auto py-4">
-      <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+      <div className="flex flex-col md:flex-row items-start md:items-end justify-between gap-4">
         <div className="w-full md:w-auto">
           <span className="text-[13px] font-bold text-blue-500 dark:text-blue-400 mb-1.5 block px-1">📁 {contentName}</span>
           <input
@@ -198,7 +198,7 @@ export default function RecordSheet({
           />
         </div>
         
-        <div className="flex gap-3 w-full md:w-auto">
+        <div className="flex gap-3 w-full md:w-auto pb-1">
           {!isServerContent && (
              <button 
                onClick={() => setShowModal(true)} 
@@ -237,7 +237,9 @@ export default function RecordSheet({
             <thead>
               <tr className="bg-slate-50 dark:bg-slate-950/50 text-[14px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
                 <th className="px-6 py-5 w-16 text-center">#</th>
-                <th className="px-6 py-5 w-40">{isServerContent ? "전투력 순위 (서버)" : "전투력 순위 (길드)"}</th>
+                <th className="px-4 py-5 w-20 text-center leading-tight">
+                  전투력<br/>순위
+                </th>
                 <th className="px-6 py-5">캐릭터명</th>
                 <th className="px-6 py-5 w-32 border-l border-slate-200 dark:border-slate-800 bg-blue-50/50 dark:bg-blue-900/10">컨텐츠 등수</th>
                 <th className="px-6 py-5 w-32">등수 차이</th>
@@ -248,8 +250,13 @@ export default function RecordSheet({
               {rows.map((row, idx) => (
                 <tr key={idx} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
                   <td className="px-6 py-3 text-center text-slate-400 font-medium">{idx + 1}</td>
-                  <td className="px-6 py-3">
-                    <input type="number" value={row.power_rank ?? ''} onChange={(e) => handleRowChange(idx, 'power_rank', e.target.value)} className="w-full px-3 py-2 bg-transparent border-none rounded focus:ring-2 focus:ring-blue-500 font-bold" />
+                  <td className="px-6 py-3 text-center">
+                    <input 
+                      type="number" 
+                      value={row.power_rank ?? ''} 
+                      onChange={(e) => handleRowChange(idx, 'power_rank', e.target.value)} 
+                      className="w-full bg-transparent border-none rounded focus:ring-2 focus:ring-blue-500 font-bold text-center" 
+                    />
                   </td>
                   <td className="px-6 py-3">
                     <input type="text" value={row.character_name} onChange={(e) => handleRowChange(idx, 'character_name', e.target.value)} className="w-full px-3 py-2 bg-transparent border-none rounded focus:ring-2 focus:ring-blue-500 text-slate-900 dark:text-slate-100 font-medium" />

@@ -22,19 +22,26 @@ export default async function RecordDetailPage({ params }: { params: Promise<{ c
 
   return (
     <div className="flex flex-col gap-2">
-      <div className="flex justify-end max-w-7xl mx-auto w-full px-4 gap-3">
-        <ShareButton contentName={content.name} record={record} sheetData={sheetData || []} isServerContent={content.is_server_content} />
-        {isLoggedIn && (
+      <RecordViewer 
+        contentName={content.name} 
+        record={record} 
+        sheetData={sheetData || []} 
+        isServerContent={content.is_server_content} 
+        actions={
           <>
-            <Link href={`/${contentId}/${recordId}/edit`} className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-slate-100 text-slate-700 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700 transition-colors font-bold text-[14px]">
-              <Edit3 className="w-4 h-4" />
-              기록 수정하기
-            </Link>
-            <DeleteRecordButton recordId={recordId} contentId={contentId} />
+            <ShareButton contentName={content.name} record={record} sheetData={sheetData || []} isServerContent={content.is_server_content} />
+            {isLoggedIn && (
+              <>
+                <Link href={`/${contentId}/${recordId}/edit`} className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-slate-100 text-slate-700 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700 transition-colors font-bold text-[14px]">
+                  <Edit3 className="w-4 h-4" />
+                  기록 수정하기
+                </Link>
+                <DeleteRecordButton recordId={recordId} contentId={contentId} />
+              </>
+            )}
           </>
-        )}
-      </div>
-      <RecordViewer contentName={content.name} record={record} sheetData={sheetData || []} isServerContent={content.is_server_content} />
+        }
+      />
     </div>
   );
 }

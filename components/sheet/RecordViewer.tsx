@@ -6,17 +6,24 @@ export default function RecordViewer({
   contentName,
   record, 
   sheetData, 
-  isServerContent 
+  isServerContent,
+  actions
 }: { 
   contentName: string;
   record: Record;
   sheetData: SheetData[];
   isServerContent: boolean;
+  actions?: React.ReactNode;
 }) {
   return (
     <div className="flex flex-col gap-8 max-w-7xl mx-auto py-4">
-      <div className="flex flex-col gap-1.5">
-        <span className="text-[13px] font-bold text-blue-500 dark:text-blue-400 px-2">📁 {contentName}</span>
+      <div className="flex flex-col gap-3">
+        <div className="flex items-end justify-between px-1">
+          <span className="text-lg font-bold text-blue-500 dark:text-blue-400">📁 {contentName}</span>
+          <div className="flex gap-3">
+            {actions}
+          </div>
+        </div>
         <h2 className="px-6 py-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl text-2xl font-bold text-slate-900 dark:text-white shadow-sm">
           {record.title}
         </h2>
@@ -28,7 +35,9 @@ export default function RecordViewer({
             <thead>
               <tr className="bg-slate-50 dark:bg-slate-950/50 text-[14px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
                 <th className="px-6 py-5 w-16 text-center">#</th>
-                <th className="px-6 py-5 w-40">{isServerContent ? "전투력 순위 (서버)" : "전투력 순위 (길드)"}</th>
+                <th className="px-4 py-5 w-20 text-center leading-tight">
+                  전투력<br/>순위
+                </th>
                 <th className="px-6 py-5">캐릭터명</th>
                 <th className="px-6 py-5 w-32 border-l border-slate-200 dark:border-slate-800 bg-blue-50/50 dark:bg-blue-900/10">컨텐츠 등수</th>
                 <th className="px-6 py-5 w-28 text-center">등수 차이</th>
@@ -44,7 +53,7 @@ export default function RecordViewer({
                 return (
                   <tr key={idx} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors">
                     <td className="px-6 py-4 text-center text-slate-400 font-medium">{idx + 1}</td>
-                    <td className="px-6 py-4 font-bold text-slate-700 dark:text-slate-300">
+                    <td className="px-6 py-4 font-bold text-slate-700 dark:text-slate-300 text-center">
                       {row.power_rank ?? '-'}
                     </td>
                     <td className="px-6 py-4">
