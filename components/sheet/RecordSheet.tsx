@@ -154,6 +154,18 @@ export default function RecordSheet({
     setRows(newRows);
   };
 
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>, rowIndex: number) => {
+    if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      const prev = document.querySelector(`input[data-row="${rowIndex - 1}"]`) as HTMLInputElement | null;
+      if (prev) { prev.focus(); setTimeout(() => prev.select(), 0); }
+    } else if (e.key === 'ArrowDown' || e.key === 'Enter') {
+      e.preventDefault();
+      const next = document.querySelector(`input[data-row="${rowIndex + 1}"]`) as HTMLInputElement | null;
+      if (next) { next.focus(); setTimeout(() => next.select(), 0); }
+    }
+  };
+
   const handleSave = async () => {
     if (!title.trim()) { alert("회차 제목을 입력해주세요!"); return; }
     if (!rows.some(r => r.character_name.trim() !== '')) {
@@ -277,16 +289,11 @@ export default function RecordSheet({
                   if (isServerContent) {
                     return (
                       <tr key={idx} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
-                        <td className="px-3 py-3 text-center">
-                          <input 
-                            type="number" 
-                            value={row.power_rank ?? ''} 
-                            onChange={(e) => handleRowChange(idx, 'power_rank', e.target.value)} 
-                            className="w-full bg-transparent border-none rounded focus:ring-2 focus:ring-blue-500 font-bold text-center" 
-                          />
+                        <td className="px-3 py-3 font-bold text-slate-700 dark:text-slate-300 text-center">
+                          {row.power_rank ?? '-'}
                         </td>
                         <td className="px-4 py-3">
-                          <input type="text" value={row.character_name} onChange={(e) => handleRowChange(idx, 'character_name', e.target.value)} className="w-full px-2 py-2 bg-transparent border-none rounded focus:ring-2 focus:ring-blue-500 text-slate-900 dark:text-slate-100 font-medium" />
+                          <span className="font-bold text-slate-900 dark:text-white text-[15px] pl-2">{row.character_name}</span>
                         </td>
                         <td className="px-3 py-3 text-center font-bold text-blue-600 dark:text-blue-400 border-l border-slate-200 dark:border-slate-800 bg-blue-50/10 dark:bg-blue-900/5">
                           {isAbsent ? <span className="text-slate-400 text-sm font-medium">미참여</span> : (getGuildContentRank(row.content_rank) ?? '-')}
@@ -294,6 +301,8 @@ export default function RecordSheet({
                         <td className="px-3 py-3 bg-blue-50/10 dark:bg-blue-900/5">
                           <input
                             type="number"
+                            data-row={idx}
+                            onKeyDown={(e) => handleKeyDown(e, idx)}
                             value={isAbsent ? '' : (row.content_rank ?? '')}
                             onChange={(e) => handleRowChange(idx, 'content_rank', e.target.value)}
                             placeholder="빈칸=미참여"
@@ -333,20 +342,17 @@ export default function RecordSheet({
                   }
                   return (
                     <tr key={idx} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
-                      <td className="px-6 py-3 text-center">
-                        <input 
-                          type="number" 
-                          value={row.power_rank ?? ''} 
-                          onChange={(e) => handleRowChange(idx, 'power_rank', e.target.value)} 
-                          className="w-full bg-transparent border-none rounded focus:ring-2 focus:ring-blue-500 font-bold text-center" 
-                        />
+                      <td className="px-6 py-3 font-bold text-slate-700 dark:text-slate-300 text-center">
+                        {row.power_rank ?? '-'}
                       </td>
                       <td className="px-6 py-3">
-                        <input type="text" value={row.character_name} onChange={(e) => handleRowChange(idx, 'character_name', e.target.value)} className="w-full px-3 py-2 bg-transparent border-none rounded focus:ring-2 focus:ring-blue-500 text-slate-900 dark:text-slate-100 font-medium" />
+                        <span className="font-bold text-slate-900 dark:text-white text-[16px] pl-1">{row.character_name}</span>
                       </td>
                       <td className="px-6 py-3 border-l border-slate-200 dark:border-slate-800 bg-blue-50/30 dark:bg-blue-900/5">
                         <input
                           type="number"
+                          data-row={idx}
+                          onKeyDown={(e) => handleKeyDown(e, idx)}
                           value={isAbsent ? '' : (row.content_rank ?? '')}
                           onChange={(e) => handleRowChange(idx, 'content_rank', e.target.value)}
                           placeholder="수동 입력"
