@@ -33,23 +33,23 @@ export default function RecordViewer({
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="bg-slate-50 dark:bg-slate-950/50 text-[14px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+              <tr className="bg-slate-50 dark:bg-slate-950/50 text-[13px] sm:text-[14px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider whitespace-nowrap">
                 {isServerContent ? (
                   <>
-                    <th className="px-3 py-4 w-16 text-center leading-tight">전체<br/>랭킹</th>
-                    <th className="px-4 py-4 min-w-[120px] max-w-[180px]">캐릭터명</th>
-                    <th className="px-3 py-4 w-16 text-center leading-tight border-l border-slate-200 dark:border-slate-800 bg-blue-50/50 dark:bg-blue-900/10">매왕<br/>등수</th>
-                    <th className="px-3 py-4 w-32 text-center leading-tight bg-blue-50/50 dark:bg-blue-900/10">컨텐츠<br/>등수</th>
-                    <th className="px-2 py-4 w-28 text-center leading-tight">등수 차이<br/><span className="text-[10px] opacity-80 decoration-none font-medium">(매왕/컨텐츠)</span></th>
-                    <th className="px-3 py-4 w-16 text-center">판정</th>
+                    <th className="px-2 sm:px-3 py-4 w-12 sm:w-16 text-center leading-tight">전체<br/>랭킹</th>
+                    <th className="px-3 sm:px-4 py-4 min-w-[100px] sm:min-w-[120px] max-w-[180px]">캐릭터명</th>
+                    <th className="px-2 sm:px-3 py-4 w-14 sm:w-16 text-center leading-tight border-l border-slate-200 dark:border-slate-800 bg-blue-50/50 dark:bg-blue-900/10">매왕<br/>등수</th>
+                    <th className="px-2 sm:px-3 py-4 min-w-[80px] sm:w-32 text-center leading-tight bg-blue-50/50 dark:bg-blue-900/10">컨텐츠<br/>등수</th>
+                    <th className="px-1 sm:px-2 py-4 min-w-[90px] text-center leading-tight">등수 차이<br/><span className="text-[10px] opacity-80 decoration-none font-medium">(매왕/컨텐츠)</span></th>
+                    <th className="px-2 sm:px-3 py-4 w-14 sm:w-16 text-center">판정</th>
                   </>
                 ) : (
                   <>
-                    <th className="px-4 py-5 w-20 text-center leading-tight">길드<br/>순위</th>
-                    <th className="px-6 py-5 min-w-[120px] max-w-[180px]">캐릭터명</th>
-                    <th className="px-6 py-5 w-40 text-center border-l border-slate-200 dark:border-slate-800 bg-blue-50/50 dark:bg-blue-900/10">매왕 등수</th>
-                    <th className="px-4 py-5 w-28 text-center whitespace-nowrap">등수 차이</th>
-                    <th className="px-4 py-5 w-24 text-center">판정</th>
+                    <th className="px-2 sm:px-4 py-5 w-14 sm:w-20 text-center leading-tight">길드<br/>순위</th>
+                    <th className="px-3 sm:px-6 py-5 min-w-[100px] sm:min-w-[120px] max-w-[180px]">캐릭터명</th>
+                    <th className="px-3 sm:px-6 py-5 min-w-[100px] sm:w-40 text-center border-l border-slate-200 dark:border-slate-800 bg-blue-50/50 dark:bg-blue-900/10">매왕 등수</th>
+                    <th className="px-2 sm:px-4 py-5 min-w-[90px] sm:w-28 text-center whitespace-nowrap">등수 차이</th>
+                    <th className="px-2 sm:px-4 py-5 w-16 sm:w-24 text-center">판정</th>
                   </>
                 )}
               </tr>
@@ -73,18 +73,18 @@ export default function RecordViewer({
 
                   if (isServerContent) {
                     return (
-                      <tr key={idx} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
-                        <td className="px-3 py-3 text-center text-slate-700 dark:text-slate-300 font-bold">{row.power_rank ?? '-'}</td>
-                        <td className="px-4 py-3">
-                          <span className="font-bold text-slate-900 dark:text-white text-[16px]">{row.character_name}</span>
+                      <tr key={idx} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors whitespace-nowrap">
+                        <td className="px-2 sm:px-3 py-3 text-center text-slate-700 dark:text-slate-300 font-bold">{row.power_rank ?? '-'}</td>
+                        <td className="px-3 sm:px-4 py-3">
+                          <span className="font-bold text-slate-900 dark:text-white text-[15px] sm:text-[16px]">{row.character_name}</span>
                         </td>
-                        <td className="px-3 py-3 text-center font-bold text-blue-600 dark:text-blue-400 border-l border-slate-200 dark:border-slate-800 bg-blue-50/10 dark:bg-blue-900/5">
-                          {isAbsent ? <span className="text-slate-400 text-[13px] font-medium">미참여</span> : (getGuildContentRank(row.content_rank) ?? '-')}
+                        <td className="px-2 sm:px-3 py-3 text-center font-bold text-blue-600 dark:text-blue-400 border-l border-slate-200 dark:border-slate-800 bg-blue-50/10 dark:bg-blue-900/5">
+                          {isAbsent ? <span className="text-slate-400 text-[12px] sm:text-[13px] font-medium block w-full whitespace-nowrap">미참여</span> : (getGuildContentRank(row.content_rank) ?? '-')}
                         </td>
-                        <td className="px-3 py-3 text-center font-bold text-blue-600 dark:text-blue-400 bg-blue-50/10 dark:bg-blue-900/5">
+                        <td className="px-2 sm:px-3 py-3 text-center font-bold text-blue-600 dark:text-blue-400 bg-blue-50/10 dark:bg-blue-900/5">
                           {isAbsent ? '-' : (row.content_rank ?? '-')}
                         </td>
-                        <td className="px-2 py-3 text-center font-bold text-[14px]">
+                        <td className="px-1 sm:px-2 py-3 text-center font-bold text-[13px] sm:text-[14px]">
                           {!isAbsent ? (() => {
                             const guildRank = idx + 1;
                             const guildContentRank = getGuildContentRank(row.content_rank)!;
@@ -103,11 +103,11 @@ export default function RecordViewer({
                             )
                           })() : '-'}
                         </td>
-                        <td className="px-3 py-3 text-center">
+                        <td className="px-2 sm:px-3 py-3 text-center">
                           {isAbsent ? (
-                            <span className="px-3 py-1.5 rounded-full text-[13px] font-bold bg-slate-100 text-slate-400 dark:bg-slate-800 dark:text-slate-500">-</span>
+                            <span className="px-2 sm:px-3 py-1 sm:py-1.5 rounded-full text-[12px] sm:text-[13px] font-bold bg-slate-100 text-slate-400 dark:bg-slate-800 dark:text-slate-500">-</span>
                           ) : row.grade && (
-                            <span className={`px-2 py-1 rounded-full text-[12px] font-bold whitespace-nowrap ${
+                            <span className={`px-2 py-1 rounded-full text-[11px] sm:text-[12px] font-bold whitespace-nowrap inline-block ${
                               row.grade === "양호" 
                                 ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400" 
                                 : row.grade === "주의"
@@ -123,20 +123,20 @@ export default function RecordViewer({
                   }
 
                   return (
-                    <tr key={idx} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors">
-                      <td className="px-6 py-4 font-bold text-slate-700 dark:text-slate-300 text-center">
+                    <tr key={idx} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors whitespace-nowrap">
+                      <td className="px-3 sm:px-6 py-4 font-bold text-slate-700 dark:text-slate-300 text-center">
                         {row.power_rank ?? '-'}
                       </td>
-                      <td className="px-6 py-4">
-                        <span className="font-bold text-slate-900 dark:text-white text-[16px]">{row.character_name}</span>
+                      <td className="px-3 sm:px-6 py-4">
+                        <span className="font-bold text-slate-900 dark:text-white text-[15px] sm:text-[16px]">{row.character_name}</span>
                       </td>
-                      <td className="px-6 py-4 border-l border-slate-100 dark:border-slate-800 bg-blue-50/10 dark:bg-blue-900/5 font-bold text-center text-[16px]">
+                      <td className="px-3 sm:px-6 py-4 border-l border-slate-100 dark:border-slate-800 bg-blue-50/10 dark:bg-blue-900/5 font-bold text-center text-[15px] sm:text-[16px]">
                         {isAbsent
-                          ? <span className="text-slate-400 text-[13px] font-medium">미참여</span>
+                          ? <span className="text-slate-400 text-[12px] sm:text-[13px] font-medium block w-full whitespace-nowrap">미참여</span>
                           : <span className="text-blue-600 dark:text-blue-400">{row.content_rank ?? '-'}</span>
                         }
                       </td>
-                      <td className="px-6 py-4 text-center font-bold">
+                      <td className="px-2 sm:px-6 py-4 text-center font-bold">
                         {(() => {
                            const rankDiff = (row.power_rank !== null && row.content_rank !== null && row.content_rank !== -1)
                              ? row.power_rank - row.content_rank
@@ -148,11 +148,11 @@ export default function RecordViewer({
                            ) : null;
                         })()}
                       </td>
-                      <td className="px-4 py-4 text-center">
+                      <td className="px-2 sm:px-4 py-4 text-center">
                         {isAbsent ? (
-                          <span className="px-4 py-1.5 rounded-full text-[14px] font-bold bg-slate-100 text-slate-400 dark:bg-slate-800 dark:text-slate-500 whitespace-nowrap">-</span>
+                          <span className="px-2 sm:px-4 py-1 sm:py-1.5 rounded-full text-[13px] sm:text-[14px] font-bold bg-slate-100 text-slate-400 dark:bg-slate-800 dark:text-slate-500 whitespace-nowrap inline-block">-</span>
                         ) : row.grade && (
-                          <span className={`px-4 py-1.5 rounded-full text-[14px] font-bold whitespace-nowrap ${
+                          <span className={`px-2 sm:px-4 py-1 sm:py-1.5 rounded-full text-[13px] sm:text-[14px] font-bold whitespace-nowrap inline-block ${
                             row.grade === "양호" 
                               ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400" 
                               : row.grade === "주의"
