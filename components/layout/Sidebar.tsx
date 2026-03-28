@@ -21,7 +21,7 @@ export default async function Sidebar() {
     .order('created_at', { ascending: false });
 
   return (
-    <aside className="w-64 h-screen bg-white dark:bg-slate-900 border-r border-slate-100 dark:border-slate-800 flex flex-col fixed left-0 top-0 pt-8 z-30 transition-colors duration-200">
+    <aside className="w-64 h-screen bg-white dark:bg-slate-900 border-r border-slate-100 dark:border-slate-800 flex flex-col fixed left-0 top-0 pt-8 z-50 transition-transform duration-300 peer-checked:translate-x-0 -translate-x-full md:translate-x-0">
       <div className="px-8 mb-10 flex items-center justify-start">
         <Link href="/">
           <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white flex items-center gap-2">
