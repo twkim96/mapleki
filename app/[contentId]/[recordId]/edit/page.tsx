@@ -13,12 +13,11 @@ export default async function EditRecordPage({ params }: { params: Promise<{ con
 
   const { data: sheetData } = await supabase.from('sheet_data').select('*').eq('record_id', recordId).order('power_rank', { ascending: true, nullsFirst: false });
   
-  // 30개의 행으로 복원
   const initialRows = Array.from({ length: 30 }, (_, i) => {
     if (sheetData && sheetData[i]) {
       const dbRow = sheetData[i];
       let rank_diff = null;
-      if (dbRow.power_rank !== null && dbRow.content_rank !== null) {
+      if (dbRow.power_rank !== null && dbRow.content_rank !== null && dbRow.content_rank !== -1) {
         rank_diff = dbRow.power_rank - dbRow.content_rank;
       }
       return {
@@ -40,7 +39,8 @@ export default async function EditRecordPage({ params }: { params: Promise<{ con
          </span>
       </div>
       <RecordSheet 
-        contentId={contentId} 
+        contentId={contentId}
+        contentName={content.name}
         isServerContent={content.is_server_content} 
         initialRecordId={recordId}
         initialTitle={record.title}

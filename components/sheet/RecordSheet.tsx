@@ -21,14 +21,24 @@ function getAutoTitle() {
   return `${month}월 ${week}주차`;
 }
 
+function computeGrade(rankDiff: number, isServerContent: boolean): string {
+  const dangerThreshold = isServerContent ? -10 : -5;
+  const cautionThreshold = isServerContent ? -5 : -3;
+  if (rankDiff <= dangerThreshold) return "위험";
+  if (rankDiff <= cautionThreshold) return "주의";
+  return "양호";
+}
+
 export default function RecordSheet({ 
-  contentId, 
+  contentId,
+  contentName,
   isServerContent,
   initialRecordId,
   initialTitle,
   initialRows
 }: { 
-  contentId: string; 
+  contentId: string;
+  contentName: string;
   isServerContent: boolean;
   initialRecordId?: string;
   initialTitle?: string;
@@ -54,41 +64,31 @@ export default function RecordSheet({
         throw new Error("캐싱된 길드원 데이터가 없습니다. 사이드바 '전체 길드원 관리' 메뉴에서 우선 외부 갱신 1회를 실행해주세요.");
       }
       
+      // 기존에 입력된 컨텐츠 등수 보존
       const existingRanks = new Map<string, number | null>();
       rows.forEach(r => {
-        if (r.character_name && r.content_rank !== null) {
+        if (r.character_name) {
           existingRanks.set(r.character_name, r.content_rank);
         }
       });
 
       const dbMembers = membersData.data;
       const finalRows: SheetRow[] = dbMembers.map((m: any, idx: number) => {
-        let pr = isServerContent ? m.power_rank : idx + 1;
-        let cr = existingRanks.get(m.character_name) ?? null;
+        const pr = isServerContent ? m.power_rank : idx + 1;
+        const cr = existingRanks.has(m.character_name) ? existingRanks.get(m.character_name)! : null;
         let diff = null;
         let grade = null;
 
-        if (pr !== null && cr !== null) {
+        // -1 = 미참여 → 판정 없음
+        if (pr !== null && cr !== null && cr !== -1) {
           diff = pr - cr;
-          const dangerThreshold = isServerContent ? -10 : -5;
-          const cautionThreshold = isServerContent ? -5 : -3;
-
-          if (diff <= dangerThreshold) grade = "위험";
-          else if (diff <= cautionThreshold) grade = "주의";
-          else grade = "양호";
+          grade = computeGrade(diff, isServerContent);
         }
 
-        return {
-          power_rank: pr,
-          character_name: m.character_name,
-          content_rank: cr,
-          rank_diff: diff,
-          grade
-        };
+        return { power_rank: pr, character_name: m.character_name, content_rank: cr, rank_diff: diff, grade };
       });
 
       setRows(finalRows);
-      
     } catch (error: any) {
       alert(error.message);
     } finally {
@@ -97,28 +97,14 @@ export default function RecordSheet({
   };
 
   const handleApplyEasyRank = (orderedNames: string[]) => {
-    const newRows = [...rows];
-    
-    // Assign 1~30 based on ordered array
-    newRows.forEach(row => {
+    const newRows = rows.map(row => {
       if (row.character_name && orderedNames.includes(row.character_name)) {
-        row.content_rank = orderedNames.indexOf(row.character_name) + 1;
+        const cr = orderedNames.indexOf(row.character_name) + 1;
+        const diff = row.power_rank !== null ? row.power_rank - cr : null;
+        const grade = diff !== null ? computeGrade(diff, isServerContent) : null;
+        return { ...row, content_rank: cr, rank_diff: diff, grade };
       }
-    });
-
-    // Recompute
-    newRows.forEach(row => {
-      if (row.power_rank !== null && row.content_rank !== null) {
-        row.rank_diff = row.power_rank - row.content_rank;
-        const cautionThreshold = -3;
-        const dangerThreshold = -5;
-        if (row.rank_diff <= dangerThreshold) row.grade = "위험";
-        else if (row.rank_diff <= cautionThreshold) row.grade = "주의";
-        else row.grade = "양호";
-      } else {
-        row.rank_diff = null;
-        row.grade = null;
-      }
+      return row;
     });
     setRows(newRows);
   };
@@ -126,27 +112,31 @@ export default function RecordSheet({
   const handleRowChange = (index: number, field: keyof SheetRow, value: any) => {
     const newRows = [...rows];
     let val = value;
-    if ((field === "power_rank" || field === "content_rank") && val !== "") {
-      val = parseInt(val, 10);
-      if (isNaN(val)) val = null;
+
+    if (field === "content_rank") {
+      // 빈칸 → -1 (미참여)
+      if (val === "" || val === null || val === undefined) {
+        val = -1;
+      } else {
+        val = parseInt(val, 10);
+        if (isNaN(val)) val = -1;
+      }
+    } else if (field === "power_rank") {
+      if (val === "") {
+        val = null;
+      } else {
+        val = parseInt(val, 10);
+        if (isNaN(val)) val = null;
+      }
     }
     
     newRows[index] = { ...newRows[index], [field]: val };
     
     const row = newRows[index];
-    if (row.power_rank !== null && row.content_rank !== null) {
+    // -1 = 미참여 → 판정·diff 없음
+    if (row.power_rank !== null && row.content_rank !== null && row.content_rank !== -1) {
       row.rank_diff = row.power_rank - row.content_rank;
-      
-      const dangerThreshold = isServerContent ? -10 : -5;
-      const cautionThreshold = isServerContent ? -5 : -3;
-
-      if (row.rank_diff <= dangerThreshold) {
-        row.grade = "위험";
-      } else if (row.rank_diff <= cautionThreshold) {
-        row.grade = "주의";
-      } else {
-        row.grade = "1인분";
-      }
+      row.grade = computeGrade(row.rank_diff, isServerContent);
     } else {
       row.rank_diff = null;
       row.grade = null;
@@ -156,18 +146,15 @@ export default function RecordSheet({
   };
 
   const handleSave = async () => {
-    if (!title.trim()) {
-      alert("회차 제목을 입력해주세요!");
-      return;
-    }
+    if (!title.trim()) { alert("회차 제목을 입력해주세요!"); return; }
     if (!rows.some(r => r.character_name.trim() !== '')) {
-      alert("최소 한 명 이상의 길드원 데이터가 필요합니다.");
-      return;
+      alert("최소 한 명 이상의 길드원 데이터가 필요합니다."); return;
     }
 
     setSaving(true);
     try {
       const method = initialRecordId ? "PUT" : "POST";
+      // content_rank 빈칸(-1)도 그대로 저장
       const payload = { contentId, recordId: initialRecordId, title, rows };
 
       const res = await fetch("/api/records", {
@@ -192,6 +179,7 @@ export default function RecordSheet({
     <div className="flex flex-col gap-8 max-w-7xl mx-auto py-4">
       <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
         <div className="w-full md:w-auto">
+          <span className="text-[13px] font-bold text-blue-500 dark:text-blue-400 mb-1.5 block px-1">📁 {contentName}</span>
           <input
             type="text"
             placeholder="회차 제목 (예: 12월 1주차 토벌전)"
@@ -258,7 +246,13 @@ export default function RecordSheet({
                     <input type="text" value={row.character_name} onChange={(e) => handleRowChange(idx, 'character_name', e.target.value)} className="w-full px-3 py-2 bg-transparent border-none rounded focus:ring-2 focus:ring-blue-500 text-slate-900 dark:text-slate-100 font-medium" />
                   </td>
                   <td className="px-6 py-3 border-l border-slate-200 dark:border-slate-800 bg-blue-50/30 dark:bg-blue-900/5">
-                    <input type="number" value={row.content_rank ?? ''} onChange={(e) => handleRowChange(idx, 'content_rank', e.target.value)} placeholder="수동입력" className="w-full px-3 py-2 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-blue-500 text-blue-600 dark:text-blue-400 font-bold text-center" />
+                    <input
+                      type="number"
+                      value={row.content_rank === -1 ? '' : (row.content_rank ?? '')}
+                      onChange={(e) => handleRowChange(idx, 'content_rank', e.target.value)}
+                      placeholder="수동입력 (빈칸=미참여)"
+                      className="w-full px-3 py-2 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-blue-500 text-blue-600 dark:text-blue-400 font-bold text-center"
+                    />
                   </td>
                   <td className="px-6 py-3 text-center font-bold">
                     {row.rank_diff !== null && (

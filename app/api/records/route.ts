@@ -118,3 +118,29 @@ export async function PUT(request: Request) {
     return NextResponse.json({ error: err.message }, { status: 500 });
   }
 }
+
+export async function DELETE(request: Request) {
+  const cookieStore = await cookies();
+  if (!cookieStore.has('mapleki-session')) {
+    return NextResponse.json({ error: '권한이 없습니다 (로그인 필요)' }, { status: 401 });
+  }
+
+  const { searchParams } = new URL(request.url);
+  const recordId = searchParams.get('recordId');
+  if (!recordId) return NextResponse.json({ error: 'recordId missing' }, { status: 400 });
+
+  try {
+    // 1. sheet_data 먼저 삭제 (FK 제약 방지)
+    const { error: sheetError } = await supabase.from('sheet_data').delete().eq('record_id', recordId);
+    if (sheetError) throw sheetError;
+
+    // 2. record 삭제
+    const { error: recordError } = await supabase.from('records').delete().eq('id', recordId);
+    if (recordError) throw recordError;
+
+    revalidatePath('/', 'layout');
+    return NextResponse.json({ success: true });
+  } catch (err: any) {
+    return NextResponse.json({ error: err.message }, { status: 500 });
+  }
+}
