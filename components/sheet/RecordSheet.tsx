@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Loader2, RefreshCw, Save } from "lucide-react";
+import { Loader2, RefreshCw, Save, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import EasyRankModal from "./EasyRankModal";
 
@@ -202,31 +202,29 @@ export default function RecordSheet({
           {!isServerContent && (
              <button 
                onClick={() => setShowModal(true)} 
-               className="flex-1 md:flex-none py-2.5 px-4 bg-amber-50 dark:bg-amber-900/20 hover:bg-amber-100 dark:hover:bg-amber-900/40 text-amber-700 dark:text-amber-400 rounded-xl text-[14px] font-bold transition-all active:scale-[0.98] flex items-center justify-center gap-2 border border-amber-200 dark:border-amber-800"
+               title="편하게 배정하기"
+               className="flex-none w-[42px] h-[42px] bg-amber-50 dark:bg-amber-900/20 hover:bg-amber-100 dark:hover:bg-amber-900/40 text-amber-700 dark:text-amber-400 rounded-xl transition-all active:scale-[0.98] flex items-center justify-center border border-amber-200 dark:border-amber-800"
              >
-               ✨ 편하게 배정하기
+               ✨
              </button>
           )}
 
           <button
             onClick={handleLoadMembers}
             disabled={scraping}
-            className="flex-1 md:flex-none py-2.5 px-5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-xl text-[14px] font-bold transition-all active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-2 border border-slate-200 dark:border-slate-700"
+            title="길드원 최신화"
+            className="flex-none w-[42px] h-[42px] bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-xl transition-all active:scale-[0.98] disabled:opacity-50 flex items-center justify-center border border-slate-200 dark:border-slate-700"
           >
-            {scraping ? (
-              <><Loader2 className="w-4 h-4 animate-spin" /> 불러오는 중...</>
-            ) : (
-              <><RefreshCw className="w-4 h-4" /> 길드원 최신화</>
-            )}
+            {scraping ? <Loader2 className="w-5 h-5 animate-spin" /> : <RefreshCw className="w-5 h-5" />}
           </button>
           
           <button
             onClick={handleSave}
             disabled={saving || scraping}
-            className="flex-1 md:flex-none py-2.5 px-5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-[14px] font-bold transition-all active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-2 shadow-sm shadow-blue-600/20"
+            title="기록 저장"
+            className="flex-none w-[42px] h-[42px] bg-blue-600 hover:bg-blue-700 text-white rounded-xl transition-all active:scale-[0.98] disabled:opacity-50 flex items-center justify-center shadow-sm shadow-blue-600/20"
           >
-            {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-            <span>기록 저장</span>
+            {saving ? <Loader2 className="w-5 h-5 animate-spin" /> : <Save className="w-5 h-5" />}
           </button>
         </div>
       </div>
@@ -239,11 +237,10 @@ export default function RecordSheet({
                 {isServerContent ? (
                   <>
                     <th className="px-3 py-4 w-16 text-center leading-tight">전체<br/>랭킹</th>
-                    <th className="px-3 py-4 w-16 text-center leading-tight">길드<br/>랭킹</th>
                     <th className="px-4 py-4 min-w-[120px]">캐릭터명</th>
-                    <th className="px-3 py-4 w-16 text-center leading-tight border-l border-slate-200 dark:border-slate-800 bg-blue-50/50 dark:bg-blue-900/10">길드<br/>등수</th>
+                    <th className="px-3 py-4 w-16 text-center leading-tight border-l border-slate-200 dark:border-slate-800 bg-blue-50/50 dark:bg-blue-900/10">매왕<br/>등수</th>
                     <th className="px-3 py-4 w-20 text-center leading-tight bg-blue-50/50 dark:bg-blue-900/10">컨텐츠<br/>등수</th>
-                    <th className="px-2 py-4 w-28 text-center leading-tight">등수 차이<br/><span className="text-[10px] opacity-80 decoration-none font-medium">(길드/컨텐츠)</span></th>
+                    <th className="px-2 py-4 w-28 text-center leading-tight">등수 차이<br/><span className="text-[10px] opacity-80 decoration-none font-medium">(매왕/컨텐츠)</span></th>
                     <th className="px-3 py-4 w-16 text-center">판정</th>
                   </>
                 ) : (
@@ -252,8 +249,8 @@ export default function RecordSheet({
                     <th className="px-4 py-5 w-20 text-center leading-tight">전투력<br/>순위</th>
                     <th className="px-6 py-5 min-w-[120px]">캐릭터명</th>
                     <th className="px-6 py-5 w-32 border-l border-slate-200 dark:border-slate-800 bg-blue-50/50 dark:bg-blue-900/10">컨텐츠 등수</th>
-                    <th className="px-6 py-5 w-32 text-center">등수 차이</th>
-                    <th className="px-6 py-5 w-24 text-center">판정</th>
+                    <th className="px-6 py-5 w-24 text-center">등수 차이</th>
+                    <th className="px-4 py-5 w-24 text-center">판정</th>
                   </>
                 )}
               </tr>
@@ -286,7 +283,6 @@ export default function RecordSheet({
                             className="w-full bg-transparent border-none rounded focus:ring-2 focus:ring-blue-500 font-bold text-center" 
                           />
                         </td>
-                        <td className="px-3 py-3 text-center text-slate-500 font-bold">{idx + 1}</td>
                         <td className="px-4 py-3">
                           <input type="text" value={row.character_name} onChange={(e) => handleRowChange(idx, 'character_name', e.target.value)} className="w-full px-2 py-2 bg-transparent border-none rounded focus:ring-2 focus:ring-blue-500 text-slate-900 dark:text-slate-100 font-medium" />
                         </td>
@@ -363,7 +359,7 @@ export default function RecordSheet({
                           </span>
                         )}
                       </td>
-                      <td className="px-6 py-3 text-center">
+                      <td className="px-4 py-3 text-center">
                         {row.grade && !isAbsent && (
                           <span className={`px-3 py-1 rounded-full text-[13px] font-bold whitespace-nowrap ${
                             row.grade === "양호" 

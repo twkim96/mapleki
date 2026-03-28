@@ -137,11 +137,10 @@ export default function ShareButton({
           {isServerContent ? (
             <>
               <th style={{ ...thStyle, width: '38px', backgroundColor: '#e2e8f0', lineHeight: '1.2' }}>전체<br/>랭킹</th>
-              <th style={{ ...thStyle, width: '38px', backgroundColor: '#e2e8f0', lineHeight: '1.2' }}>길드<br/>랭킹</th>
               <th style={{ ...thStyle }}>캐릭터명</th>
-              <th style={{ ...thStyle, width: '38px', backgroundColor: '#eff6ff', lineHeight: '1.2' }}>길드<br/>등수</th>
+              <th style={{ ...thStyle, width: '38px', backgroundColor: '#eff6ff', lineHeight: '1.2' }}>매왕<br/>등수</th>
               <th style={{ ...thStyle, width: '48px', backgroundColor: '#eff6ff', lineHeight: '1.2' }}>컨텐츠<br/>등수</th>
-              <th style={{ ...thStyle, width: '70px', lineHeight: '1.2' }}>등수 차이<br/><span style={{ fontSize: '9px', fontWeight: 'normal', opacity: 0.8 }}>(길드/컨텐츠)</span></th>
+              <th style={{ ...thStyle, width: '70px', lineHeight: '1.2' }}>등수 차이<br/><span style={{ fontSize: '9px', fontWeight: 'normal', opacity: 0.8 }}>(매왕/컨텐츠)</span></th>
               <th style={{ ...thStyle, width: '50px' }}>판정</th>
             </>
           ) : (
@@ -162,7 +161,6 @@ export default function ShareButton({
             {isServerContent ? (
               <>
                 <td style={{ ...tdStyle, fontWeight: 'bold', color: '#334155', textAlign: 'center' }}>{row.powerRank ?? '-'}</td>
-                <td style={{ ...tdStyle, backgroundColor: '#f1f5f9', fontWeight: 'bold', color: '#94a3b8' }}>{row.idx}</td>
                 <td style={{ ...tdStyle, fontWeight: 'bold', color: '#0f172a', textAlign: 'left', paddingLeft: '10px', fontSize: '14px' }}>{row.characterName}</td>
                 <td style={{ ...tdStyle, backgroundColor: '#f0f9ff', fontWeight: 'bold', color: row.isAbsent ? '#94a3b8' : '#2563eb' }}>
                   {row.isAbsent ? '미참' : (row.guildContentRank ?? '-')}
@@ -217,10 +215,10 @@ export default function ShareButton({
     <>
       <button 
         onClick={() => setShowModal(true)}
-        className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-blue-50 text-blue-600 hover:bg-blue-100 dark:bg-blue-900/40 dark:text-blue-400 dark:hover:bg-blue-900/60 transition-colors font-bold text-[14px]"
+        title="공유용 이미지"
+        className="flex items-center justify-center w-[42px] h-[42px] rounded-xl bg-blue-50 text-blue-600 hover:bg-blue-100 dark:bg-blue-900/40 dark:text-blue-400 dark:hover:bg-blue-900/60 transition-colors"
       >
-        <Camera className="w-4 h-4" />
-        공유용 이미지
+        <Camera className="w-5 h-5" />
       </button>
 
       {showModal && (
