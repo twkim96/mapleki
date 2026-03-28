@@ -9,13 +9,14 @@
 - **Language:** TypeScript
 - **Styling:** Tailwind CSS
 - **Deployment:** Vercel
-- **Database:** Vercel Postgres (또는 Supabase)
+- **Database:** Supabase (PostgreSQL)
 - **Scraping:** Cheerio (API Route에서 서버 사이드 스크래핑 수행)
 
 ## 🎯 핵심 요구사항 및 기능 명세
 
 ### 1. 인증 및 권한 (Authentication & Route Protection)
-- 복잡한 회원가입 없이 **단일 공용 계정(ID/PW)**으로 로그인하여 관리자 권한을 공유합니다.
+- 복잡한 회원가입이나 DB 연동 없이, **환경변수(`.env`)에 저장된 단일 공용 계정(ID/PW)**으로 로그인합니다.
+- 로그인 성공 시 서버에서 HTTP-Only 쿠키를 발급하며, Next.js `middleware.ts`를 통해 라우트를 보호합니다.
 - **조회(Read):** 로그인 없이 누구나 열람 가능. (메인 대시보드, 컨텐츠별 게시판)
 - **추가/수정(Create/Update):** 로그인한 관리자만 접근 가능. (`/new`, `/edit` 라우트 보호)
 
@@ -24,54 +25,64 @@
 - 사이드바 또는 메인 상단의 `+` 버튼 클릭 시 모달창이 열리며 새 컨텐츠를 생성합니다.
 - 생성된 컨텐츠는 사이드바 네비게이션과 메인 화면의 그리드 카드에 즉각 반영됩니다.
 
-### 3. 데이터 자동 수집 및 수동 기입 융합 (Scraping & Sheet)
-- **시트 UI:** 최대 30행으로 구성된 테이블 UI.
-- **자동 수집 (좌측):** - 시트 내 '길드원 재검색' 버튼 클릭 시, `mgf.gg`에서 데이터를 스크래핑합니다.
-  - 1차 수집: `https://mgf.gg/contents/guild_info.php?g_name=매왕` (현재 길드원 닉네임 목록 확보)
-  - 2차 수집: `https://mgf.gg/contents/character.php?n={닉네임}` (해당 캐릭터의 서버 내 등수 확보. 타겟 요소: `<div class="stat-value rank-world">O위</div>`)
-  - 수집된 데이터를 바탕으로 **서버 순위 -> 닉네임** 순으로 정렬하여 시트에 자동 바인딩합니다.
-- **수동 기입 (우측):**
-  - 관리자가 각 길드원의 실제 컨텐츠 수행 등수를 직접 입력(Input)합니다.
-- **데이터 처리:** 서버 순위와 실제 등수를 비교하여 순위 변동, 등급 등을 계산 후 저장합니다.
+### 3. 데이터 자동 수집 및 스마트 캐싱 (Scraping & Caching)
+- **외부 사이트 스크래핑 정책:** 초과 요청 시 발생할 수 있는 타 사이트(mgf.gg) IP 영구 차단을 방지하기 위해, **'전체 길드원 관리'** 메뉴에 길드원 명단 캐싱 기능을 도입했습니다. 
+- 관리자가 이 메뉴에서 수동 갱신을 누를 때에만 전체 길드원의 캐릭터명과 전투력 순위(1~30위)를 긁어오며, **10분 대기 쿨타임**이 동작합니다. 이외 일반적인 기록 시트 작성 시에는 캐싱된 우리 DB의 데이터를 즉각 꺼내와 0% 차단 위험률과 1초의 초고속 로딩을 보장합니다.
+
+### 4. 편리한 입력 시스템과 드래그앤드롭 (Easy Rank & Sliding)
+- **수동 기입 (서버 컨텐츠 전용):** 다른 서버의 길드와 경쟁하므로 관리자가 각 길드원의 등수를 직접 숫자(예: 1, 15위)로 입력합니다.
+- **편하게 배정하기 (길드 내전용 컨텐츠 전용):** 30명이 끼리끼리 경쟁하는 시스템인 경우, 점수를 칠 필요 없이 제공되는 `[✨편하게 배정하기]` 모달을 통해 **모바일 터치 패드처럼 카드를 스마트폰 넘기듯 상하로 드래그**하여 순위를 직관적으로 줄 세울 수 있습니다.
+- 저장된 데이터는 '양호(1인분)', '주의', '위험' 3단계로 배지가 자체 판정됩니다.
+
+## 🎨 Design System & Aesthetics (UI/UX 가이드라인)
+
+AI 에이전트는 모든 UI 컴포넌트를 작성할 때 아래 가이드라인을 철저히 따라야 합니다.
+
+### 1. 벤치마킹 대상: 토스증권 (https://www.tossinvest.com/)
+- **핵심 키워드:** 극강의 깔끔함, 미니멀리즘, 직관성, 여백의 미(Whitespace), 부드러운 라운딩.
+- **여백 (Spacing):** 컴포넌트 간, 텍스트 간 여백을 충분히 두어 정보가 꽉 차 보이지 않게 하세요. (Tailwind의 `p-`, `m-`, `gap-` 값을 넉넉히 사용)
+- **둥글기 (Border Radius):** 직각보다는 부드러운 라운딩을 선호합니다. 카드, 버튼, 인풋창 등에 `rounded-xl` 이상의 값을 기본으로 사용하세요.
+- **색상 (Color Palette):**
+  - **Primary:** 토스 고유의 파란색 (예: `bg-blue-600`, `text-blue-600`).
+  - **Greyscale:** 텍스트와 배경에는 꽉 찬 검은색/흰색 대신 부드러운 그레이톤을 사용하세요. (예: 라이트모드 텍스트는 `text-slate-900`, 보조 텍스트는 `text-slate-600`)
+
+### 2. 테마 스위칭 (라이트/다크 모드)
+- **기본 설정:** 사용자가 처음 접속 시 **라이트 모드**가 기본으로 설정되어야 합니다.
+- **구현 방식:** Tailwind CSS의 `darkMode: 'class'` 전략과 `next-themes` 라이브러리를 사용하세요.
+- **UI:** 헤더 우측 상단에 태양/달 아이콘 버튼(테마 토글러)을 배치하여 사용자가 언제든지 전환할 수 있도록 하세요.
+- **다크모드 색상:** 단순히 색상을 반전시키지 말고, 토스 앱처럼 눈이 편안한 깊은 다크 그레이톤을 사용하세요. (예: 배경은 `dark:bg-slate-950`, 카드 배경은 `dark:bg-slate-900`)
+
+## 🗄️ 데이터베이스 스키마 (Supabase)
+프로젝트는 4개의 핵심 테이블로 (PostgreSQL) 구성됩니다.
+1. `contents`: 길드 컨텐츠 종류 (id TEXT PRIMARY KEY, name TEXT, is_server_content BOOLEAN, created_at)
+2. `records`: 특정 컨텐츠의 특정 회차 기록 (id UUID, content_id, title, created_at)
+3. `sheet_data`: 회차별 길드원 성적 (id UUID, record_id, power_rank, character_name, content_rank, grade, created_at) - *rank_diff 는 저장하지 않고 프론트에서 계산*
+4. `guild_members`: 스크래핑 IP 차단을 피하기 위한 전체 길드원 캐싱용 명단 (character_name TEXT PRIMARY KEY, power_rank INTEGER, updated_at TIMESTAMP WITH TIME ZONE)
+
+## 🔑 환경 변수 (.env.local)
+로컬 테스트 및 Vercel 배포 시 다음 환경변수가 필요합니다.
+- `NEXT_PUBLIC_SUPABASE_URL`
+- `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+- `ADMIN_ID`: 공용 관리자 아이디
+- `ADMIN_PASSWORD`: 공용 관리자 비밀번호
 
 ## 📂 디렉토리 및 라우팅 구조 (App Router 기준)
-
-Next.js의 Dynamic Routing(`[ ]`)을 활용하여, 컨텐츠가 몇 개가 생성되든 단일 템플릿 파일로 대응하도록 설계되었습니다.
-
 ```text
 mapleki/
 ├── app/
-│   ├── page.tsx                           # 메인 대시보드 (컨텐츠 카드 그리드 뷰, 누구나 열람)
+│   ├── page.tsx                           # 메인 대시보드 (누구나 열람)
 │   ├── login/page.tsx                     # 공용 로그인 화면
-│   └── [contentId]/                       # 컨텐츠별 동적 라우팅 (예: /subjugation)
-│       ├── page.tsx                       # 해당 컨텐츠의 회차별 게시판 뷰 (누구나 열람)
-│       ├── new/page.tsx                   # 새 회차 기록 추가 시트 화면 (로그인 필요)
-│       └── [recordId]/edit/page.tsx       # 기존 회차 기록 수정 시트 화면 (로그인 필요)
-│   ├── api/                               # Serverless API 엔드포인트
-│       ├── auth/route.ts                  # 로그인 세션 처리
-│       ├── scrape/guild/route.ts          # 길드원 목록 스크래핑 (CORS 우회용 서버 API)
-│       ├── scrape/character/route.ts      # 캐릭터별 전투력 스크래핑 (CORS 우회용 서버 API)
-│       ├── contents/route.ts              # 컨텐츠 카테고리 CRUD
-│       └── records/route.ts               # 시트 기록 CRUD
-├── components/
-│   ├── layout/
-│   │   ├── Sidebar.tsx                    # 좌측 네비게이션
-│   │   └── Header.tsx                     # 상단 바 (로그인 버튼 등)
-│   ├── common/
-│   │   └── Modal.tsx                      # 컨텐츠 추가용 공통 팝업
-│   ├── board/
-│   │   └── GridCard.tsx                   # 메인/게시판용 카드 컴포넌트
-│   └── sheet/
-│       └── RecordSheet.tsx                # 핵심 기능인 30칸 데이터 입력 시트 컴포넌트
+│   └── [contentId]/                       # 컨텐츠별 동적 라우팅
+│       ├── page.tsx                       # 해당 컨텐츠 게시판 뷰 (누구나 열람)
+│       ├── new/page.tsx                   # 기록 추가 시트 화면 (로그인 필요)
+│       └── [recordId]/edit/page.tsx       # 기록 수정 시트 화면 (로그인 필요)
+├── api/
+│   ├── scrape/guild/route.ts              # 길드원 스크래핑 (CORS 우회)
+│   ├── scrape/character/route.ts          # 캐릭터 순위 스크래핑
+│   └── ...
+├── components/                            # UI 컴포넌트 모음 (layout, common, board, sheet 등)
 ├── lib/
-│   ├── scraper.ts                         # 실제 DOM 파싱 로직 (Cheerio 등)
-│   ├── auth.ts                            # 인증 관련 유틸리티
-│   └── db.ts                              # 데이터베이스 연결 객체
+│   ├── db.ts                              # Supabase 클라이언트 설정
+│   └── scraper.ts                         # Cheerio 파싱 로직
 └── types/
-    └── index.ts                           # 전역 TypeScript 인터페이스 정의 (GuildMember, ContentCategory 등)
-⚠️ 개발 원칙 (AI 코딩 가이드라인)
-모듈화 엄수: 코드를 작성할 때 Canvas 미리보기를 위해 파일들을 하나로 합치지 마세요. 파일별로 모듈화된 구조(export/import)를 철저히 유지해야 합니다.
-
-명확한 경로 명시: 각 코드 블록 상단이나 주석에 해당 파일의 정확한 경로(예: // components/layout/Sidebar.tsx)를 반드시 명시하세요.
-
-생략 금지: 수정 사항이 발생하더라도 전체를 합치지 말고, 해당 파일만 수정해서 답변하되 코드를 복사해서 바로 붙여넣을 수 있도록 생략(... 등) 없이 모듈의 코드 전체를 작성해 주세요.
+    └── index.ts                           # 전역 타입 (TypeScript)
