@@ -39,8 +39,13 @@ export default function ShareButton({
       useCORS: true,
       backgroundColor: "#ffffff",
       logging: false,
-      // html2canvas가 computed style을 읽을 때 lab() 색상을 만나지 않도록
-      // captureRef 내부에는 Tailwind className을 절대 쓰지 않음
+      onclone: (clonedDoc) => {
+        // 핵심 수정: html2canvas는 부모 요소의 computed style도 전부 파싱함.
+        // Tailwind CSS v4는 lab() 색상 함수를 사용하는데 html2canvas가 이를 지원하지 않음.
+        // 클론된 문서에서 모든 스타일시트를 제거하면 lab() 파싱 자체가 발생하지 않음.
+        // 캡처 영역은 100% inline style이므로 스타일시트 없이도 정상 렌더링됨.
+        clonedDoc.querySelectorAll('style, link[rel="stylesheet"]').forEach(el => el.remove());
+      }
     });
   }, []);
 
