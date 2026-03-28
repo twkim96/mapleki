@@ -252,17 +252,17 @@ export default function RecordSheet({
                 {isServerContent ? (
                   <>
                     <th className="px-3 py-4 w-16 text-center leading-tight">전체<br/>랭킹</th>
-                    <th className="px-4 py-4 min-w-[120px]">캐릭터명</th>
+                    <th className="px-4 py-4 min-w-[120px] max-w-[180px]">캐릭터명</th>
                     <th className="px-3 py-4 w-16 text-center leading-tight border-l border-slate-200 dark:border-slate-800 bg-blue-50/50 dark:bg-blue-900/10">매왕<br/>등수</th>
-                    <th className="px-3 py-4 w-20 text-center leading-tight bg-blue-50/50 dark:bg-blue-900/10">컨텐츠<br/>등수</th>
+                    <th className="px-3 py-4 w-32 text-center leading-tight bg-blue-50/50 dark:bg-blue-900/10">컨텐츠<br/>등수</th>
                     <th className="px-2 py-4 w-28 text-center leading-tight">등수 차이<br/><span className="text-[10px] opacity-80 decoration-none font-medium">(매왕/컨텐츠)</span></th>
                     <th className="px-3 py-4 w-16 text-center">판정</th>
                   </>
                 ) : (
                   <>
                     <th className="px-4 py-5 w-20 text-center leading-tight">길드<br/>순위</th>
-                    <th className="px-6 py-5 min-w-[120px]">캐릭터명</th>
-                    <th className="px-6 py-5 w-32 border-l border-slate-200 dark:border-slate-800 bg-blue-50/50 dark:bg-blue-900/10">매왕 등수</th>
+                    <th className="px-6 py-5 min-w-[120px] max-w-[180px]">캐릭터명</th>
+                    <th className="px-6 py-5 w-40 text-center border-l border-slate-200 dark:border-slate-800 bg-blue-50/50 dark:bg-blue-900/10">매왕 등수</th>
                     <th className="px-4 py-5 w-28 text-center whitespace-nowrap">등수 차이</th>
                     <th className="px-4 py-5 w-24 text-center">판정</th>
                   </>

@@ -61,10 +61,10 @@ export default async function ContentPage({ params }: { params: Promise<{ conten
               <Link
                 href={`/${contentId}/new`}
                 title="새 기록지 작성"
-                className="group flex items-center h-[42px] max-w-[42px] hover:max-w-[200px] px-[11px] rounded-xl bg-blue-600 text-white hover:bg-blue-700 transition-all duration-300 overflow-hidden shadow-sm shadow-blue-600/20"
+                className="group flex flex-none items-center h-[42px] max-w-[42px] hover:max-w-[200px] px-[11px] rounded-xl bg-blue-600 text-white hover:bg-blue-700 transition-all duration-300 overflow-hidden shadow-sm shadow-blue-600/20"
               >
                 <FilePlus2 className="w-5 h-5 flex-shrink-0" />
-                <span className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap text-[14px] font-bold ml-2">새 기록지 작성</span>
+                <span className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap text-[14px] font-bold ml-2 flex-shrink-0 relative pt-px">새 기록지 작성</span>
               </Link>
               <DeleteContentButton contentId={contentId} contentName={content.name} />
             </>
