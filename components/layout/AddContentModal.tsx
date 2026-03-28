@@ -1,11 +1,17 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { PlusSquare, X, Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { createPortal } from "react-dom";
 
 export default function AddContentModal({ isLoggedIn }: { isLoggedIn: boolean }) {
   const [isOpen, setIsOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
+  
+  useEffect(() => {
+    setMounted(true);
+  }, []);
   const [name, setName] = useState("");
   const [isServerContent, setIsServerContent] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -53,7 +59,7 @@ export default function AddContentModal({ isLoggedIn }: { isLoggedIn: boolean })
         <PlusSquare className="w-4 h-4" />
       </button>
 
-      {isOpen && (
+      {isOpen && mounted && createPortal(
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
           <div className="bg-white dark:bg-slate-900 rounded-3xl p-8 w-full max-w-sm shadow-xl border border-slate-100 dark:border-slate-800">
             <div className="flex justify-between items-center mb-6">
@@ -97,7 +103,8 @@ export default function AddContentModal({ isLoggedIn }: { isLoggedIn: boolean })
               </button>
             </form>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </>
   );

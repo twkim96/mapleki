@@ -45,11 +45,10 @@ export default function RecordViewer({
                   </>
                 ) : (
                   <>
-                    <th className="px-6 py-5 w-16 text-center">#</th>
-                    <th className="px-4 py-5 w-20 text-center leading-tight">전투력<br/>순위</th>
+                    <th className="px-4 py-5 w-20 text-center leading-tight">길드<br/>순위</th>
                     <th className="px-6 py-5 min-w-[120px]">캐릭터명</th>
-                    <th className="px-6 py-5 w-32 border-l border-slate-200 dark:border-slate-800 bg-blue-50/50 dark:bg-blue-900/10">컨텐츠 등수</th>
-                    <th className="px-6 py-5 w-24 text-center">등수 차이</th>
+                    <th className="px-6 py-5 w-32 border-l border-slate-200 dark:border-slate-800 bg-blue-50/50 dark:bg-blue-900/10">매왕 등수</th>
+                    <th className="px-4 py-5 w-28 text-center whitespace-nowrap">등수 차이</th>
                     <th className="px-4 py-5 w-24 text-center">판정</th>
                   </>
                 )}
@@ -125,7 +124,6 @@ export default function RecordViewer({
 
                   return (
                     <tr key={idx} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors">
-                      <td className="px-6 py-4 text-center text-slate-400 font-medium">{idx + 1}</td>
                       <td className="px-6 py-4 font-bold text-slate-700 dark:text-slate-300 text-center">
                         {row.power_rank ?? '-'}
                       </td>
