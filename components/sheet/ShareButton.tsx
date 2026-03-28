@@ -5,24 +5,29 @@ import { Camera, Download, Copy, X, Loader2, Check } from "lucide-react";
 import html2canvas from "html2canvas";
 import { Record, SheetData } from "@/types";
 
-// changeClass를 Tailwind 대신 순수 inline style 객체로 반환
-function getChangeStyle(change: string): React.CSSProperties {
-  if (change.startsWith("▲")) {
-    return { backgroundColor: "#22c55e", color: "#000000", fontWeight: "bold" };
-  } else if (change.startsWith("▼")) {
-    return { backgroundColor: "#fca5a5", color: "#000000", fontWeight: "bold" };
-  }
-  return { backgroundColor: "#ffffff", color: "#000000" };
+function getGradeStyle(grade: string): React.CSSProperties {
+  if (grade === "양호") return { backgroundColor: "#d1fae5", color: "#047857", fontWeight: "bold" };
+  if (grade === "주의") return { backgroundColor: "#fef3c7", color: "#b45309", fontWeight: "bold" };
+  if (grade === "위험") return { backgroundColor: "#fee2e2", color: "#b91c1c", fontWeight: "bold" };
+  return { color: "#94a3b8" };
+}
+
+function getDiffStyle(diff: number): React.CSSProperties {
+  return diff >= 0
+    ? { color: "#10b981", fontWeight: "bold" }
+    : { color: "#ef4444", fontWeight: "bold" };
 }
 
 export default function ShareButton({ 
   contentName, 
   record, 
-  sheetData 
+  sheetData,
+  isServerContent
 }: { 
   contentName: string;
   record: Record;
   sheetData: SheetData[];
+  isServerContent?: boolean;
 }) {
   const [showModal, setShowModal] = useState(false);
   const [capturing, setCapturing] = useState(false);
@@ -30,7 +35,6 @@ export default function ShareButton({
   const [isWide, setIsWide] = useState(false);
   const captureRef = useRef<HTMLDivElement>(null);
 
-  // 캡처 공통 로직 (canvas 반환)
   const getCanvas = useCallback(async () => {
     if (!captureRef.current) throw new Error("캡처 대상 없음");
     await new Promise(resolve => setTimeout(resolve, 300));
@@ -40,16 +44,11 @@ export default function ShareButton({
       backgroundColor: "#ffffff",
       logging: false,
       onclone: (clonedDoc) => {
-        // 핵심 수정: html2canvas는 부모 요소의 computed style도 전부 파싱함.
-        // Tailwind CSS v4는 lab() 색상 함수를 사용하는데 html2canvas가 이를 지원하지 않음.
-        // 클론된 문서에서 모든 스타일시트를 제거하면 lab() 파싱 자체가 발생하지 않음.
-        // 캡처 영역은 100% inline style이므로 스타일시트 없이도 정상 렌더링됨.
         clonedDoc.querySelectorAll('style, link[rel="stylesheet"]').forEach(el => el.remove());
       }
     });
   }, []);
 
-  // 다운로드
   const handleDownload = async () => {
     setCapturing(true);
     try {
@@ -67,7 +66,6 @@ export default function ShareButton({
     }
   };
 
-  // 클립보드 복사
   const handleCopy = async () => {
     setCapturing(true);
     try {
@@ -75,9 +73,7 @@ export default function ShareButton({
       canvas.toBlob(async (blob) => {
         if (!blob) { alert("클립보드 복사 실패"); setCapturing(false); return; }
         try {
-          await navigator.clipboard.write([
-            new ClipboardItem({ "image/png": blob })
-          ]);
+          await navigator.clipboard.write([new ClipboardItem({ "image/png": blob })]);
           setCopied(true);
           setTimeout(() => setCopied(false), 2000);
         } catch {
@@ -92,82 +88,60 @@ export default function ShareButton({
     }
   };
 
-  // 날짜 포맷
-  const dateObj = new Date(record.created_at);
-  const formattedDate = `${String(dateObj.getFullYear()).slice(2)}.${String(dateObj.getMonth() + 1).padStart(2, '0')}.${String(dateObj.getDate()).padStart(2, '0')}`;
   const displayTitle = record.title || "기록";
+  const powerLabel = isServerContent ? "전투력 순위 (서버)" : "전투력 순위 (길드)";
 
-  // 실제 데이터가 있는 row 수만큼만 (빈 row 제거)
-  const actualMemberCount = sheetData.length;
-  const maxRows = actualMemberCount > 0 ? actualMemberCount : 1;
-
-  // 행 생성: sheetData를 power_rank 순으로 정렬 후 1~N 매핑
-  const sortedByPower = [...sheetData].sort((a, b) => (a.power_rank || 999) - (b.power_rank || 999));
-
-  const rows = sortedByPower.map((row, idx) => {
-    const rank = idx + 1;
-    let change = "=";
-
-    if (row.content_rank && row.power_rank !== null) {
-      if (row.power_rank !== row.content_rank) {
-        const diff = row.power_rank - row.content_rank;
-        if (diff > 0) {
-          change = `▲${diff}`;
-        } else if (diff < 0) {
-          change = `▼${Math.abs(diff)}`;
-        }
-      }
-    } else if (!row.content_rank) {
-      change = "-";
-    }
-
-    // content_rank로 최종 순위 칸에 들어갈 이름 찾기
-    const contentRankHolder = sheetData.find(d => d.content_rank === rank);
-
+  // RecordViewer와 동일한 row 데이터 구성 (빈 row 제거)
+  const rows = sheetData.map((row, idx) => {
+    const rankDiff = (row.power_rank !== null && row.content_rank !== null && row.content_rank !== -1)
+      ? row.power_rank - row.content_rank
+      : null;
+    const isAbsent = row.content_rank === -1;
     return {
-      rank,
-      powerName: row.character_name || "-",
-      change,
-      finalName: contentRankHolder?.character_name || "-",
-      grade: row.grade || "-"
+      idx: idx + 1,
+      powerRank: row.power_rank,
+      characterName: row.character_name,
+      contentRank: row.content_rank,
+      rankDiff,
+      isAbsent,
+      grade: row.grade
     };
   });
 
-  // 가로 모드용 분할
+  // 가로 모드: 절반으로 나누기
   const half = Math.ceil(rows.length / 2);
   const leftRows = isWide ? rows.slice(0, half) : rows;
   const rightRows = isWide ? rows.slice(half) : [];
 
+  const thStyle: React.CSSProperties = { padding: '8px 6px', border: '1px solid #cbd5e1', fontSize: '12px', fontWeight: 'bold' };
+  const tdStyle: React.CSSProperties = { padding: '7px 6px', border: '1px solid #e2e8f0', fontSize: '13px' };
+
   const renderTable = (tableRows: typeof rows) => (
-    <table style={{ width: '100%', textAlign: 'center', borderCollapse: 'collapse', color: '#000000', fontSize: '14px' }}>
+    <table style={{ width: '100%', textAlign: 'center', borderCollapse: 'collapse', color: '#000000' }}>
       <thead>
-        <tr style={{ backgroundColor: '#f1f5f9', fontWeight: 'bold', borderBottom: '2px solid #000000' }}>
-          <th style={{ padding: '8px 4px', border: '1px solid #cbd5e1', backgroundColor: '#000000', color: '#ffffff', width: '50px', letterSpacing: '0.05em', fontSize: '13px' }}>
-            {formattedDate}
-          </th>
-          <th style={{ padding: '8px 4px', border: '1px solid #cbd5e1', fontSize: '13px' }}>전투력 순위</th>
-          <th style={{ padding: '8px 4px', border: '1px solid #cbd5e1', width: '70px', fontSize: '13px' }}>순위 변동</th>
-          <th style={{ padding: '8px 4px', border: '1px solid #cbd5e1', fontSize: '13px' }}>최종 순위</th>
-          <th style={{ padding: '8px 4px', border: '1px solid #cbd5e1', width: '60px', fontSize: '13px' }}>판정</th>
+        <tr style={{ backgroundColor: '#f1f5f9', borderBottom: '2px solid #94a3b8' }}>
+          <th style={{ ...thStyle, width: '36px', backgroundColor: '#e2e8f0' }}>#</th>
+          <th style={{ ...thStyle }}>{powerLabel}</th>
+          <th style={{ ...thStyle }}>캐릭터명</th>
+          <th style={{ ...thStyle, backgroundColor: '#eff6ff' }}>컨텐츠 등수</th>
+          <th style={{ ...thStyle, width: '64px' }}>등수 차이</th>
+          <th style={{ ...thStyle, width: '56px' }}>판정</th>
         </tr>
       </thead>
       <tbody>
         {tableRows.map((row) => (
-          <tr key={row.rank} style={{ borderBottom: '1px solid #e2e8f0' }}>
-            <td style={{ padding: '8px 4px', border: '1px solid #cbd5e1', backgroundColor: '#e2e8f0', fontWeight: 'bold', fontSize: '13px' }}>
-              {row.rank}
+          <tr key={row.idx} style={{ borderBottom: '1px solid #e2e8f0' }}>
+            <td style={{ ...tdStyle, backgroundColor: '#f1f5f9', fontWeight: 'bold', color: '#94a3b8' }}>{row.idx}</td>
+            <td style={{ ...tdStyle, fontWeight: 'bold', color: '#334155' }}>{row.powerRank ?? '-'}</td>
+            <td style={{ ...tdStyle, fontWeight: 'bold', color: '#0f172a', textAlign: 'left', paddingLeft: '10px' }}>{row.characterName}</td>
+            <td style={{ ...tdStyle, backgroundColor: '#f0f9ff', fontWeight: 'bold', color: row.isAbsent ? '#94a3b8' : '#2563eb' }}>
+              {row.isAbsent ? '미참여' : (row.contentRank ?? '-')}
             </td>
-            <td style={{ padding: '8px 6px', border: '1px solid #cbd5e1', fontWeight: 'bold', fontSize: '14px', whiteSpace: 'nowrap' }}>
-              {row.powerName}
+            <td style={{ ...tdStyle, ...(row.rankDiff !== null ? getDiffStyle(row.rankDiff) : { color: '#cbd5e1' }) }}>
+              {row.rankDiff !== null ? (row.rankDiff > 0 ? `+${row.rankDiff}` : row.rankDiff) : '-'}
             </td>
-            <td style={{ padding: '4px 4px', border: '1px solid #cbd5e1', ...getChangeStyle(row.change) }}>
-              {row.change}
-            </td>
-            <td style={{ padding: '8px 6px', border: '1px solid #cbd5e1', fontWeight: 'bold', fontSize: '14px', whiteSpace: 'nowrap' }}>
-              {row.finalName}
-            </td>
-            <td style={{ padding: '8px 4px', border: '1px solid #cbd5e1', fontSize: '13px', fontWeight: 'bold' }}>
-              {row.grade}
+            <td style={{ ...tdStyle, ...(row.grade ? getGradeStyle(row.grade) : { color: '#cbd5e1' }), borderRadius: '0' }}>
+              {row.isAbsent ? '-' : (row.grade || '-')}
             </td>
           </tr>
         ))}
@@ -189,7 +163,6 @@ export default function ShareButton({
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
           <div className="bg-white dark:bg-slate-900 rounded-3xl overflow-hidden shadow-2xl max-w-5xl w-full flex flex-col max-h-[90vh]">
             
-            {/* Modal Header */}
             <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
               <h3 className="font-bold text-lg text-slate-900 dark:text-white flex items-center gap-2">
                 <Camera className="w-5 h-5" /> 공유 이미지 미리보기
@@ -210,45 +183,34 @@ export default function ShareButton({
               </div>
             </div>
 
-            {/* Preview Area */}
             <div className={`p-6 bg-slate-100 dark:bg-slate-950 flex-1 ${isWide ? 'overflow-auto' : 'overflow-y-auto'}`}>
               <div className="flex justify-center min-h-max pb-4">
-                {/* 
-                  ⚠️ CAPTURE ZONE ⚠️
-                  html2canvas 호환성을 위해 이 안에서는 Tailwind className을 절대 사용하지 않음.
-                  모든 스타일은 inline style(Hex 색상 코드)로만 적용.
-                */}
+                {/* ⚠️ CAPTURE ZONE: Tailwind 금지, 100% inline style ⚠️ */}
                 <div 
                   ref={captureRef}
                   style={{ 
-                    width: isWide ? '1100px' : '580px',
+                    width: isWide ? '1100px' : '620px',
                     fontFamily: "system-ui, -apple-system, 'Segoe UI', sans-serif",
                     backgroundColor: '#ffffff'
                   }}
                 >
-                  {/* Header Bar */}
+                  {/* Header */}
                   <div style={{ 
-                    backgroundColor: '#0f172a', 
-                    color: '#ffffff', 
-                    textAlign: 'center', 
-                    padding: '16px 0', 
-                    fontSize: '24px', 
-                    fontWeight: 'bold', 
-                    letterSpacing: '0.03em' 
+                    backgroundColor: '#0f172a', color: '#ffffff', textAlign: 'center', 
+                    padding: '14px 0', fontSize: '22px', fontWeight: 'bold', letterSpacing: '0.03em' 
                   }}>
-                    {contentName} - {displayTitle}
+                    📁 {contentName} — {displayTitle}
                   </div>
 
-                  {/* Table Area */}
+                  {/* Table */}
                   <div style={{ 
                     display: isWide ? 'grid' : 'block',
                     gridTemplateColumns: isWide ? '1fr 1fr' : undefined,
-                    gap: isWide ? '2px' : undefined,
+                    gap: isWide ? '0' : undefined,
                     backgroundColor: '#ffffff', 
-                    color: '#000000', 
                     border: '2px solid #cbd5e1'
                   }}>
-                    <div style={{ width: '100%' }}>
+                    <div style={{ width: '100%', borderRight: isWide ? '2px solid #cbd5e1' : undefined }}>
                       {renderTable(leftRows)}
                     </div>
                     {rightRows.length > 0 && (
@@ -261,31 +223,18 @@ export default function ShareButton({
               </div>
             </div>
 
-            {/* Action Buttons */}
             <div className="px-6 py-5 border-t border-slate-100 dark:border-slate-800 flex justify-center gap-3 bg-white dark:bg-slate-900">
               <button 
-                onClick={handleCopy}
-                disabled={capturing}
+                onClick={handleCopy} disabled={capturing}
                 className="flex items-center gap-2 px-6 py-4 rounded-2xl bg-emerald-600 text-white font-bold text-[15px] hover:bg-emerald-700 active:scale-[0.98] transition-all flex-1 max-w-xs justify-center shadow-lg shadow-emerald-500/20 disabled:opacity-50"
               >
-                {capturing ? (
-                  <><Loader2 className="w-5 h-5 animate-spin" /> 복사 중...</>
-                ) : copied ? (
-                  <><Check className="w-5 h-5" /> 복사 완료!</>
-                ) : (
-                  <><Copy className="w-5 h-5" /> 클립보드 복사</>
-                )}
+                {capturing ? <><Loader2 className="w-5 h-5 animate-spin" /> 복사 중...</> : copied ? <><Check className="w-5 h-5" /> 복사 완료!</> : <><Copy className="w-5 h-5" /> 클립보드 복사</>}
               </button>
               <button 
-                onClick={handleDownload}
-                disabled={capturing}
+                onClick={handleDownload} disabled={capturing}
                 className="flex items-center gap-2 px-6 py-4 rounded-2xl bg-blue-600 text-white font-bold text-[15px] hover:bg-blue-700 active:scale-[0.98] transition-all flex-1 max-w-xs justify-center shadow-lg shadow-blue-500/20 disabled:opacity-50"
               >
-                {capturing ? (
-                  <><Loader2 className="w-5 h-5 animate-spin" /> 저장 중...</>
-                ) : (
-                  <><Download className="w-5 h-5" /> 이미지 저장</>
-                )}
+                {capturing ? <><Loader2 className="w-5 h-5 animate-spin" /> 저장 중...</> : <><Download className="w-5 h-5" /> 이미지 저장</>}
               </button>
             </div>
           </div>

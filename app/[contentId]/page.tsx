@@ -2,6 +2,8 @@ import { supabase } from '@/lib/db';
 import Link from 'next/link';
 import { FilePlus2 } from 'lucide-react';
 import { cookies } from 'next/headers';
+import { notFound } from 'next/navigation';
+import DeleteContentButton from '@/components/sheet/DeleteContentButton';
 
 function formatRelativeTime(dateStr: string) {
   const date = new Date(dateStr);
@@ -37,7 +39,9 @@ export default async function ContentPage({ params }: { params: Promise<{ conten
   const cookieStore = await cookies();
   const isLoggedIn = cookieStore.has('mapleki-session');
 
-  // Load records for this content
+  const { data: content } = await supabase.from('contents').select('*').eq('id', contentId).single();
+  if (!content) return notFound();
+
   const { data: records } = await supabase
     .from('records')
     .select('*')
@@ -48,15 +52,18 @@ export default async function ContentPage({ params }: { params: Promise<{ conten
     <div className="flex flex-col gap-8 max-w-5xl mx-auto py-4">
       <div className="flex items-end justify-between border-b border-slate-200 dark:border-slate-800 pb-6">
         <div>
-          <h2 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">기록 게시판</h2>
+          <h2 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">{content.name}</h2>
           <p className="text-slate-500 dark:text-slate-400 mt-2 text-[15px]">해당 컨텐츠의 모든 진행 결과를 확인하세요.</p>
         </div>
-        <div>
+        <div className="flex items-center gap-3">
           {isLoggedIn && (
-            <Link href={`/${contentId}/new`} className="flex items-center gap-2 px-6 py-3 rounded-2xl bg-blue-600 text-white text-[15px] font-bold hover:bg-blue-700 active:scale-[0.98] transition-all shadow-sm shadow-blue-600/20">
-              <FilePlus2 className="w-5 h-5" />
-              <span>새 기록지 작성</span>
-            </Link>
+            <>
+              <Link href={`/${contentId}/new`} className="flex items-center gap-2 px-6 py-3 rounded-2xl bg-blue-600 text-white text-[15px] font-bold hover:bg-blue-700 active:scale-[0.98] transition-all shadow-sm shadow-blue-600/20">
+                <FilePlus2 className="w-5 h-5" />
+                <span>새 기록지 작성</span>
+              </Link>
+              <DeleteContentButton contentId={contentId} contentName={content.name} />
+            </>
           )}
         </div>
       </div>

@@ -1,88 +1,121 @@
-# 🍁 Mapleki (메이플키우기 매왕 길드 관리 대시보드)
+# 🍁 Mapleki — 매왕 길드 관리 대시보드
 
 ## 📌 프로젝트 개요
-메이플스토리 키우기 '매왕' 길드(최대 30명)의 길드 컨텐츠 참여도를 관리하기 위한 웹 대시보드입니다. 
-길드원의 실제 스펙(전투력 순위)과 컨텐츠 내 수행 등수를 비교하여 '1인분'을 제대로 하고 있는지 파악하는 것을 목적으로 합니다. 기존 엑셀 수작업을 웹 스크래핑과 연동하여 반자동화합니다.
+메이플스토리 키우기 '매왕' 길드(최대 30명)의 길드 컨텐츠 참여도를 관리하기 위한 웹 대시보드입니다.  
+길드원의 실제 스펙(전투력 순위)과 컨텐츠 내 수행 등수를 비교하여 '양호/주의/위험' 3단계로 자동 판정합니다.  
+기존 엑셀 수작업을 웹 스크래핑과 연동하여 반자동화하는 것이 목표입니다.
+
+---
 
 ## 🛠 기술 스택
-- **Framework:** Next.js (App Router)
-- **Language:** TypeScript
-- **Styling:** Tailwind CSS
-- **Deployment:** Vercel
-- **Database:** Supabase (PostgreSQL)
-- **Scraping:** Cheerio (API Route에서 서버 사이드 스크래핑 수행)
+| 분류 | 기술 |
+|---|---|
+| Framework | Next.js (App Router) |
+| Language | TypeScript |
+| Styling | Tailwind CSS |
+| Database | Supabase (PostgreSQL) |
+| Deployment | Vercel |
+| Scraping | Cheerio (서버 사이드 API Route) |
+| Drag & Drop | @dnd-kit |
+| Image Export | html2canvas |
 
-## 🎯 핵심 요구사항 및 기능 명세
+---
 
-### 1. 인증 및 권한 (Authentication & Route Protection)
-- 복잡한 회원가입이나 DB 연동 없이, **환경변수(`.env`)에 저장된 단일 공용 계정(ID/PW)**으로 로그인합니다.
-- 로그인 성공 시 서버에서 HTTP-Only 쿠키를 발급하며, Next.js `middleware.ts`를 통해 라우트를 보호합니다.
-- **조회(Read):** 로그인 없이 누구나 열람 가능. (메인 대시보드, 컨텐츠별 게시판)
-- **추가/수정(Create/Update):** 로그인한 관리자만 접근 가능. (`/new`, `/edit` 라우트 보호)
+## 🎯 주요 기능
 
-### 2. 컨텐츠 카테고리 동적 관리 (Dynamic Categories)
-- 길드 컨텐츠(예: 길드 토벌전, 플래그 레이스 등)의 종류가 유동적이므로, 사용자가 직접 추가할 수 있어야 합니다.
-- 사이드바 또는 메인 상단의 `+` 버튼 클릭 시 모달창이 열리며 새 컨텐츠를 생성합니다.
-- 생성된 컨텐츠는 사이드바 네비게이션과 메인 화면의 그리드 카드에 즉각 반영됩니다.
+### 1. 인증 및 권한
+- 환경변수에 저장된 단일 공용 계정(ID/PW)으로 로그인
+- 로그인 성공 시 HTTP-Only 쿠키 발급
+- **조회(Read):** 로그인 없이 누구나 열람 가능
+- **추가/수정/삭제(CUD):** 로그인한 관리자만 접근 가능
 
-### 3. 데이터 자동 수집 및 스마트 캐싱 (Scraping & Caching)
-- **외부 사이트 스크래핑 정책:** 초과 요청 시 발생할 수 있는 타 사이트(mgf.gg) IP 영구 차단을 방지하기 위해, **'전체 길드원 관리'** 메뉴에 길드원 명단 캐싱 기능을 도입했습니다. 
-- 관리자가 이 메뉴에서 수동 갱신을 누를 때에만 전체 길드원의 캐릭터명과 전투력 순위(1~30위)를 긁어오며, **10분 대기 쿨타임**이 동작합니다. 이외 일반적인 기록 시트 작성 시에는 캐싱된 우리 DB의 데이터를 즉각 꺼내와 0% 차단 위험률과 1초의 초고속 로딩을 보장합니다.
+### 2. 컨텐츠 카테고리 동적 관리
+- 길드 컨텐츠(길드 토벌전, 플래그 레이스 등)를 직접 추가/삭제 가능
+- 사이드바 `+` 버튼으로 신규 컨텐츠 생성
+- **컨텐츠 삭제:** 해당 컨텐츠의 기록 게시판 페이지 상단 우측에서 삭제 (사이드바 제거)
 
-### 4. 편리한 입력 시스템과 드래그앤드롭 (Easy Rank & Sliding)
-- **수동 기입 (서버 컨텐츠 전용):** 다른 서버의 길드와 경쟁하므로 관리자가 각 길드원의 등수를 직접 숫자(예: 1, 15위)로 입력합니다.
-- **편하게 배정하기 (길드 내전용 컨텐츠 전용):** 30명이 끼리끼리 경쟁하는 시스템인 경우, 점수를 칠 필요 없이 제공되는 `[✨편하게 배정하기]` 모달을 통해 **모바일 터치 패드처럼 카드를 스마트폰 넘기듯 상하로 드래그**하여 순위를 직관적으로 줄 세울 수 있습니다.
-- 저장된 데이터는 '양호(1인분)', '주의', '위험' 3단계로 배지가 자체 판정됩니다.
+### 3. 데이터 자동 수집 및 스마트 캐싱
+- **IP 차단 방지:** '전체 길드원 관리' 메뉴에서 수동 갱신 시에만 외부(mgf.gg) 스크래핑 수행
+- **10분 쿨타임** 적용으로 과도한 요청 차단
+- 기록 시트 작성 시에는 DB에 캐싱된 데이터를 즉시 사용 (0% 차단 위험)
 
-## 🎨 Design System & Aesthetics (UI/UX 가이드라인)
+### 4. 기록 관리
+- 컨텐츠별 기록 게시판에서 회차별 결과 등록/수정/삭제 가능
+- **기록 삭제:** 기록 열람 페이지에서 삭제 버튼(로그인 필요)
 
-AI 에이전트는 모든 UI 컴포넌트를 작성할 때 아래 가이드라인을 철저히 따라야 합니다.
+### 5. 편리한 입력 시스템
 
-### 1. 벤치마킹 대상: 토스증권 (https://www.tossinvest.com/)
-- **핵심 키워드:** 극강의 깔끔함, 미니멀리즘, 직관성, 여백의 미(Whitespace), 부드러운 라운딩.
-- **여백 (Spacing):** 컴포넌트 간, 텍스트 간 여백을 충분히 두어 정보가 꽉 차 보이지 않게 하세요. (Tailwind의 `p-`, `m-`, `gap-` 값을 넉넉히 사용)
-- **둥글기 (Border Radius):** 직각보다는 부드러운 라운딩을 선호합니다. 카드, 버튼, 인풋창 등에 `rounded-xl` 이상의 값을 기본으로 사용하세요.
-- **색상 (Color Palette):**
-  - **Primary:** 토스 고유의 파란색 (예: `bg-blue-600`, `text-blue-600`).
-  - **Greyscale:** 텍스트와 배경에는 꽉 찬 검은색/흰색 대신 부드러운 그레이톤을 사용하세요. (예: 라이트모드 텍스트는 `text-slate-900`, 보조 텍스트는 `text-slate-600`)
+#### 수동 입력 (서버 컨텐츠)
+- 서버 전체 랭킹 기반 컨텐츠에서는 직접 등수 숫자 입력
+- **빈칸 제출 시 자동으로 -1(미참여) 처리** → 판정 없음 표시
 
-### 2. 테마 스위칭 (라이트/다크 모드)
-- **기본 설정:** 사용자가 처음 접속 시 **라이트 모드**가 기본으로 설정되어야 합니다.
-- **구현 방식:** Tailwind CSS의 `darkMode: 'class'` 전략과 `next-themes` 라이브러리를 사용하세요.
-- **UI:** 헤더 우측 상단에 태양/달 아이콘 버튼(테마 토글러)을 배치하여 사용자가 언제든지 전환할 수 있도록 하세요.
-- **다크모드 색상:** 단순히 색상을 반전시키지 말고, 토스 앱처럼 눈이 편안한 깊은 다크 그레이톤을 사용하세요. (예: 배경은 `dark:bg-slate-950`, 카드 배경은 `dark:bg-slate-900`)
+#### 편하게 배정하기 (길드 내부 컨텐츠 전용)
+- 드래그 앤 드롭으로 30명 순위를 직관적으로 배정
+- **X(미참여) 버튼:** 클릭 시 해당 길드원이 맨 아래로 이동하며 미참여(-1) 처리
+- 화살표 버튼으로 세밀하게 순서 조정 가능
+
+### 6. 판정 시스템
+- **양호:** 전투력 대비 등수 차이가 기준 이하
+- **주의:** 중간 단계
+- **위험:** 전투력 대비 등수가 현저히 낮음
+- 컨텐츠 타입(서버/길드)에 따라 판정 기준 임계값 다름
+- **미참여(-1):** 판정 없음, 등수 차이 없음
+
+### 7. 공유용 이미지 생성
+- 기록 열람 화면에서 `[공유용 이미지]` 버튼 클릭
+- **세로 모드:** 단일 테이블 (모바일 공유 최적)
+- **가로 모드:** 절반씩 나눈 2컬럼 테이블 (스크린샷 한 장에 담김)
+- 컬럼: `#`, `전투력 순위`, `캐릭터명`, `컨텐츠 등수`, `등수 차이`, `판정`
+- PNG 이미지 **다운로드** / **클립보드 복사** 지원
+- html2canvas Tailwind v4 `lab()` 파싱 오류 → `onclone`으로 스타일시트 제거하여 해결
+
+---
 
 ## 🗄️ 데이터베이스 스키마 (Supabase)
-프로젝트는 4개의 핵심 테이블로 (PostgreSQL) 구성됩니다.
-1. `contents`: 길드 컨텐츠 종류 (id TEXT PRIMARY KEY, name TEXT, is_server_content BOOLEAN, created_at)
-2. `records`: 특정 컨텐츠의 특정 회차 기록 (id UUID, content_id, title, created_at)
-3. `sheet_data`: 회차별 길드원 성적 (id UUID, record_id, power_rank, character_name, content_rank, grade, created_at) - *rank_diff 는 저장하지 않고 프론트에서 계산*
-4. `guild_members`: 스크래핑 IP 차단을 피하기 위한 전체 길드원 캐싱용 명단 (character_name TEXT PRIMARY KEY, power_rank INTEGER, updated_at TIMESTAMP WITH TIME ZONE)
 
-## 🔑 환경 변수 (.env.local)
-로컬 테스트 및 Vercel 배포 시 다음 환경변수가 필요합니다.
-- `NEXT_PUBLIC_SUPABASE_URL`
-- `NEXT_PUBLIC_SUPABASE_ANON_KEY`
-- `ADMIN_ID`: 공용 관리자 아이디
-- `ADMIN_PASSWORD`: 공용 관리자 비밀번호
+| 테이블 | 주요 컬럼 | 설명 |
+|---|---|---|
+| `contents` | id, name, is_server_content | 길드 컨텐츠 종류 |
+| `records` | id, content_id, title, created_at | 회차별 기록 |
+| `sheet_data` | record_id, power_rank, character_name, content_rank, grade | 길드원 성적 (`-1` = 미참여) |
+| `guild_members` | character_name, power_rank, updated_at | 스크래핑 캐시 (IP 차단 방지) |
 
-## 📂 디렉토리 및 라우팅 구조 (App Router 기준)
+> `rank_diff`는 DB에 저장하지 않고 프론트엔드에서 계산합니다.
+
+---
+
+## 🔑 환경 변수
+
+```env
+NEXT_PUBLIC_SUPABASE_URL=
+NEXT_PUBLIC_SUPABASE_ANON_KEY=
+ADMIN_ID=
+ADMIN_PASSWORD=
+```
+
+> Vercel 배포 시 위 4개 환경변수를 반드시 설정해야 합니다.
+
+---
+
+## 📂 주요 라우팅 구조
+
 ```text
-mapleki/
-├── app/
-│   ├── page.tsx                           # 메인 대시보드 (누구나 열람)
-│   ├── login/page.tsx                     # 공용 로그인 화면
-│   └── [contentId]/                       # 컨텐츠별 동적 라우팅
-│       ├── page.tsx                       # 해당 컨텐츠 게시판 뷰 (누구나 열람)
-│       ├── new/page.tsx                   # 기록 추가 시트 화면 (로그인 필요)
-│       └── [recordId]/edit/page.tsx       # 기록 수정 시트 화면 (로그인 필요)
-├── api/
-│   ├── scrape/guild/route.ts              # 길드원 스크래핑 (CORS 우회)
-│   ├── scrape/character/route.ts          # 캐릭터 순위 스크래핑
-│   └── ...
-├── components/                            # UI 컴포넌트 모음 (layout, common, board, sheet 등)
-├── lib/
-│   ├── db.ts                              # Supabase 클라이언트 설정
-│   └── scraper.ts                         # Cheerio 파싱 로직
-└── types/
-    └── index.ts                           # 전역 타입 (TypeScript)
+app/
+├── page.tsx                          # 메인 대시보드
+├── login/page.tsx                    # 로그인
+├── members/page.tsx                  # 전체 길드원 관리 (스크래핑/캐싱)
+└── [contentId]/
+    ├── page.tsx                      # 컨텐츠 기록 게시판 (컨텐츠명 표시, 컨텐츠 삭제)
+    ├── new/page.tsx                  # 기록 추가
+    └── [recordId]/
+        ├── page.tsx                  # 기록 열람 (공유 이미지, 기록 삭제)
+        └── edit/page.tsx             # 기록 수정
+```
+
+---
+
+## 🎨 디자인 가이드라인
+- **벤치마크:** 토스증권 (극강의 깔끔함, 미니멀리즘, 여백의 미)
+- **Primary Color:** `blue-600`
+- **다크모드:** `slate-950` 배경, `slate-900` 카드
+- **라운딩:** 버튼·카드 기본 `rounded-xl` 이상

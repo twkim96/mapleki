@@ -96,14 +96,23 @@ export default function RecordSheet({
     }
   };
 
-  const handleApplyEasyRank = (orderedNames: string[]) => {
+  const handleApplyEasyRank = (orderedNames: string[], absentNames: string[]) => {
     const newRows = rows.map(row => {
-      if (row.character_name && orderedNames.includes(row.character_name)) {
-        const cr = orderedNames.indexOf(row.character_name) + 1;
+      if (!row.character_name) return row;
+
+      if (absentNames.includes(row.character_name)) {
+        // 미참여 → content_rank = -1, 판정 없음
+        return { ...row, content_rank: -1, rank_diff: null, grade: null };
+      }
+
+      const rankIndex = orderedNames.indexOf(row.character_name);
+      if (rankIndex !== -1) {
+        const cr = rankIndex + 1;
         const diff = row.power_rank !== null ? row.power_rank - cr : null;
         const grade = diff !== null ? computeGrade(diff, isServerContent) : null;
         return { ...row, content_rank: cr, rank_diff: diff, grade };
       }
+
       return row;
     });
     setRows(newRows);
@@ -193,7 +202,7 @@ export default function RecordSheet({
           {!isServerContent && (
              <button 
                onClick={() => setShowModal(true)} 
-               className="flex-1 md:flex-none py-4 px-5 bg-amber-50 dark:bg-amber-900/20 hover:bg-amber-100 dark:hover:bg-amber-900/40 text-amber-700 dark:text-amber-400 rounded-2xl text-[14px] font-bold transition-all active:scale-[0.98] flex items-center justify-center gap-2 border border-amber-200 dark:border-amber-800"
+               className="flex-1 md:flex-none py-2.5 px-4 bg-amber-50 dark:bg-amber-900/20 hover:bg-amber-100 dark:hover:bg-amber-900/40 text-amber-700 dark:text-amber-400 rounded-xl text-[14px] font-bold transition-all active:scale-[0.98] flex items-center justify-center gap-2 border border-amber-200 dark:border-amber-800"
              >
                ✨ 편하게 배정하기
              </button>
@@ -202,21 +211,21 @@ export default function RecordSheet({
           <button
             onClick={handleLoadMembers}
             disabled={scraping}
-            className="flex-1 md:flex-none py-4 px-6 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-2xl text-[15px] font-bold transition-all active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-2 border border-slate-200 dark:border-slate-700"
+            className="flex-1 md:flex-none py-2.5 px-5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-xl text-[14px] font-bold transition-all active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-2 border border-slate-200 dark:border-slate-700"
           >
             {scraping ? (
-              <><Loader2 className="w-5 h-5 animate-spin" /> 불러오는 중...</>
+              <><Loader2 className="w-4 h-4 animate-spin" /> 불러오는 중...</>
             ) : (
-              <><RefreshCw className="w-5 h-5" /> 길드원 최신화</>
+              <><RefreshCw className="w-4 h-4" /> 길드원 최신화</>
             )}
           </button>
           
           <button
             onClick={handleSave}
             disabled={saving || scraping}
-            className="flex-1 md:flex-none py-4 px-8 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl text-[15px] font-bold transition-all active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-2 shadow-sm shadow-blue-600/20"
+            className="flex-1 md:flex-none py-2.5 px-5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-[14px] font-bold transition-all active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-2 shadow-sm shadow-blue-600/20"
           >
-            {saving ? <Loader2 className="w-5 h-5 animate-spin" /> : <Save className="w-5 h-5" />}
+            {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
             <span>기록 저장</span>
           </button>
         </div>
@@ -284,7 +293,7 @@ export default function RecordSheet({
       <EasyRankModal 
         isOpen={showModal} 
         onClose={() => setShowModal(false)}
-        sortedNames={rows.map(r => r.character_name).filter(Boolean)}
+        rows={rows.filter(r => r.character_name.trim() !== '')}
         onApply={handleApplyEasyRank}
       />
     </div>
