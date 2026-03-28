@@ -20,7 +20,7 @@ interface RowData {
 }
 
 function SortableItem({ id, character_name, index, onMoveUp, onMoveDown, onToggleAbsent, isFirst, isLast, absent, absentCount }: any) {
-  const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id, disabled: absent });
+  const { attributes, listeners, setNodeRef, setActivatorNodeRef, transform, transition } = useSortable({ id, disabled: absent });
   const style = { transform: CSS.Transform.toString(transform), transition };
 
   return (
@@ -28,15 +28,16 @@ function SortableItem({ id, character_name, index, onMoveUp, onMoveDown, onToggl
       ref={setNodeRef}
       style={style}
       {...(absent ? {} : attributes)}
-      className={`flex items-center gap-3 p-2.5 rounded-xl border shadow-sm mb-2 group select-none ${
+      {...(absent ? {} : listeners)}
+      className={`flex items-center gap-3 p-2.5 rounded-xl border shadow-sm mb-2 group select-none touch-none ${
         absent
           ? 'bg-slate-100 dark:bg-slate-800/50 border-slate-200 dark:border-slate-700 opacity-60 cursor-default'
-          : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 cursor-default'
+          : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 cursor-grab active:cursor-grabbing'
       }`}
     >
       {/* 미참여(X) 토글 버튼 */}
       <button
-        onPointerDown={(e) => e.stopPropagation()}
+        onPointerDown={(e) => { e.stopPropagation(); }}
         onClick={() => onToggleAbsent(id)}
         title={absent ? '참여 복원' : '미참여 처리'}
         className={`p-1.5 rounded-lg transition-colors flex-none ${
@@ -48,10 +49,10 @@ function SortableItem({ id, character_name, index, onMoveUp, onMoveDown, onToggl
         <X className="w-3.5 h-3.5" />
       </button>
 
-      {/* 드래그 핸들 */}
-      <div 
-        {...(absent ? {} : listeners)}
-        className={`p-1 ${absent ? 'text-slate-300 dark:text-slate-600' : 'text-slate-400 hover:text-blue-500 cursor-grab active:cursor-grabbing touch-none'}`}
+      {/* 드래그 핸들 (시각적 표시용) */}
+      <div
+        ref={absent ? undefined : setActivatorNodeRef}
+        className={`p-1 pointer-events-none ${absent ? 'text-slate-300 dark:text-slate-600' : 'text-slate-400'}`}
       >
         <GripVertical className="w-5 h-5" />
       </div>
