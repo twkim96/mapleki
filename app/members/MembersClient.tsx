@@ -2,14 +2,51 @@
 
 import { useEffect, useState } from "react";
 import { Loader2, RefreshCw, AlertTriangle, Plus, Trash2, Edit3, Save, X } from "lucide-react";
+import { getTierImage } from "@/lib/tier";
 
 interface Member {
   power_rank: number | string | null;
   character_name: string;
 }
 
+interface TierEntry {
+  contentName: string;
+  recordTitle: string;
+  contentRank: number;
+  recordCreatedAt: string;
+}
+
+type TierMap = Record<string, TierEntry[]>;
+
+function TierBadge({ entry }: { entry: TierEntry }) {
+  const img = getTierImage(entry.contentRank);
+  if (!img) return null;
+  return (
+    <div
+      className="relative group/tier flex-shrink-0"
+      title={`[${entry.contentName}] ${entry.recordTitle} — ${entry.contentRank}위`}
+    >
+      <img
+        src={img}
+        alt={`${entry.contentRank}위`}
+        className="w-7 h-7 object-contain"
+      />
+      {/* 호버 툴팁 */}
+      <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 z-20 hidden group-hover/tier:flex flex-col items-center pointer-events-none">
+        <div className="bg-slate-900 text-white text-[11px] font-bold rounded-lg px-2.5 py-1.5 whitespace-nowrap shadow-xl leading-snug text-center">
+          <div className="text-slate-300 text-[10px]">{entry.contentName}</div>
+          <div>{entry.recordTitle}</div>
+          <div className="text-blue-400">{entry.contentRank}위</div>
+        </div>
+        <div className="w-2 h-2 bg-slate-900 rotate-45 -mt-1" />
+      </div>
+    </div>
+  );
+}
+
 export default function MembersClient({ isLoggedIn }: { isLoggedIn: boolean }) {
   const [members, setMembers] = useState<Member[]>([]);
+  const [tierMap, setTierMap] = useState<TierMap>({});
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState(false);
   const [lastUpdated, setLastUpdated] = useState<string | null>(null);
@@ -19,16 +56,24 @@ export default function MembersClient({ isLoggedIn }: { isLoggedIn: boolean }) {
   const [savingManual, setSavingManual] = useState(false);
 
   useEffect(() => {
-    fetchMembers();
+    fetchAll();
   }, []);
 
-  const fetchMembers = async () => {
+  const fetchAll = async () => {
     setLoading(true);
-    const res = await fetch('/api/members');
-    const json = await res.json();
-    if (json.success && json.data.length > 0) {
-      setMembers(json.data);
-      setLastUpdated(new Date(json.data[0].updated_at).toLocaleString('ko-KR'));
+    const [membersRes, tiersRes] = await Promise.all([
+      fetch('/api/members'),
+      fetch('/api/members/tiers'),
+    ]);
+    const membersJson = await membersRes.json();
+    const tiersJson = await tiersRes.json();
+
+    if (membersJson.success && membersJson.data.length > 0) {
+      setMembers(membersJson.data);
+      setLastUpdated(new Date(membersJson.data[0].updated_at).toLocaleString('ko-KR'));
+    }
+    if (tiersJson.success) {
+      setTierMap(tiersJson.data);
     }
     setLoading(false);
   };
@@ -202,19 +247,39 @@ export default function MembersClient({ isLoggedIn }: { isLoggedIn: boolean }) {
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="bg-slate-50 dark:bg-slate-950/50 text-[14px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                <th className="px-6 py-5 w-32 text-center">전투력 순위</th>
-                <th className="px-6 py-5">캐릭터명</th>
+                <th className="px-6 py-5 w-28 text-center whitespace-nowrap">전투력<br/>순위</th>
+                <th className="px-6 py-5 whitespace-nowrap">캐릭터명</th>
+                <th className="px-4 py-5">
+                  <div className="flex items-center gap-1.5">
+                    <span>컨텐츠 티어 기록</span>
+                    <span className="text-[11px] font-normal text-slate-400 dark:text-slate-500 normal-case">(최신순 · 호버 시 상세)</span>
+                  </div>
+                </th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 dark:divide-slate-800 text-[15px]">
-              {members.map((m, idx) => (
-                <tr key={idx} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors">
-                  <td className="px-6 py-4 text-center text-blue-600 dark:text-blue-400 font-bold">{m.power_rank}</td>
-                  <td className="px-6 py-4">
-                    <span className="font-bold text-slate-900 dark:text-white text-[16px]">{m.character_name}</span>
-                  </td>
-                </tr>
-              ))}
+              {members.map((m, idx) => {
+                const tiers = tierMap[m.character_name] ?? [];
+                return (
+                  <tr key={idx} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors">
+                    <td className="px-6 py-4 text-center text-blue-600 dark:text-blue-400 font-bold">{m.power_rank}</td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className="font-bold text-slate-900 dark:text-white text-[16px]">{m.character_name}</span>
+                    </td>
+                    <td className="px-4 py-3">
+                      {tiers.length === 0 ? (
+                        <span className="text-slate-300 dark:text-slate-600 text-[13px] font-medium">기록 없음</span>
+                      ) : (
+                        <div className="flex flex-wrap gap-1.5 items-center">
+                          {tiers.map((entry, i) => (
+                            <TierBadge key={i} entry={entry} />
+                          ))}
+                        </div>
+                      )}
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         )}
