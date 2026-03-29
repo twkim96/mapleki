@@ -14,3 +14,18 @@ export function getTierImage(rank: number | null | undefined): string | null {
   if (rank <= 350) return '/tier/grandMaster4.webp';
   return '/tier/grandMaster5.webp';
 }
+
+export function isNearTierBoundary(rank: number | null | undefined): boolean {
+  if (rank === null || rank === undefined || rank <= 0) return false;
+  
+  // 경계 10, 30: +- 1
+  if ([10, 30].some(b => Math.abs(rank - b) <= 1)) return true;
+  
+  // 경계 50, 70: +- 2
+  if ([50, 70].some(b => Math.abs(rank - b) <= 2)) return true;
+  
+  // 경계 100, 150, 200, 250, 350: +- 5
+  if ([100, 150, 200, 250, 350].some(b => Math.abs(rank - b) <= 5)) return true;
+  
+  return false;
+}

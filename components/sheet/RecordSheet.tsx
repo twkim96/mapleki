@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Loader2, RefreshCw, Save, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import EasyRankModal from "./EasyRankModal";
-import { getTierImage } from "@/lib/tier";
+import { getTierImage, isNearTierBoundary } from "@/lib/tier";
 
 interface SheetRow {
   power_rank: number | null;
@@ -253,9 +253,9 @@ export default function RecordSheet({
                 {isServerContent ? (
                   <>
                     <th className="px-3 py-4 w-16 text-center leading-tight">전체<br/>랭킹</th>
-                    <th className="px-4 py-4 min-w-[120px] max-w-[180px]">캐릭터명</th>
-                    <th className="px-3 py-4 w-16 text-center leading-tight border-l border-slate-200 dark:border-slate-800 bg-blue-50/50 dark:bg-blue-900/10">매왕<br/>등수</th>
-                    <th className="px-3 py-4 w-32 text-center leading-tight bg-blue-50/50 dark:bg-blue-900/10">컨텐츠<br/>등수</th>
+                    <th className="px-4 py-4 min-w-[150px] max-w-[220px]">캐릭터명</th>
+                    <th className="px-3 py-4 w-20 text-center leading-tight border-l border-slate-200 dark:border-slate-800 bg-blue-50/50 dark:bg-blue-900/10">매왕<br/>등수</th>
+                    <th className="px-3 py-4 w-20 text-center leading-tight bg-blue-50/50 dark:bg-blue-900/10">컨텐츠<br/>등수</th>
                     <th className="px-3 py-4 w-16 text-center leading-tight bg-blue-50/50 dark:bg-blue-900/10">티어</th>
                     <th className="px-2 py-4 w-28 text-center leading-tight">등수 차이<br/><span className="text-[10px] opacity-80 decoration-none font-medium">(매왕/컨텐츠)</span></th>
                     <th className="px-3 py-4 w-16 text-center">판정</th>
@@ -308,7 +308,11 @@ export default function RecordSheet({
                             value={isAbsent ? '' : (row.content_rank ?? '')}
                             onChange={(e) => handleRowChange(idx, 'content_rank', e.target.value)}
                             placeholder="빈칸=미참여"
-                            className="w-full px-2 py-2 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-blue-500 text-blue-600 dark:text-blue-400 font-bold text-center text-sm"
+                            className={`w-full px-2 py-2 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-blue-500 font-bold text-center text-sm ${
+                              !isAbsent && isNearTierBoundary(row.content_rank)
+                                ? "bg-lime-100 text-lime-700 dark:bg-lime-900/40 dark:text-lime-400"
+                                : "bg-white dark:bg-slate-950 text-blue-600 dark:text-blue-400"
+                            }`}
                           />
                         </td>
                         <td className="px-3 py-3 text-center bg-blue-50/10 dark:bg-blue-900/5">

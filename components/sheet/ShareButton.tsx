@@ -4,7 +4,7 @@ import { useState, useRef, useCallback } from "react";
 import { Camera, Download, Copy, X, Loader2, Check } from "lucide-react";
 import html2canvas from "html2canvas";
 import { Record, SheetData } from "@/types";
-import { getTierImage } from "@/lib/tier";
+import { getTierImage, isNearTierBoundary } from "@/lib/tier";
 
 function getGradeStyle(grade: string): React.CSSProperties {
   if (grade === "양호") return { backgroundColor: "#d1fae5", color: "#047857", fontWeight: "bold" };
@@ -146,9 +146,9 @@ export default function ShareButton({
             <>
               <th style={{ ...thStyle, width: '38px', backgroundColor: '#e2e8f0', lineHeight: '1.2' }}>전체<br/>랭킹</th>
               <th style={{ ...thStyle }}>캐릭터명</th>
-              <th style={{ ...thStyle, width: '38px', backgroundColor: '#eff6ff', lineHeight: '1.2' }}>매왕<br/>등수</th>
-              <th style={{ ...thStyle, width: '48px', backgroundColor: '#eff6ff', lineHeight: '1.2' }}>컨텐츠<br/>등수</th>
-              <th style={{ ...thStyle, width: '44px', backgroundColor: '#eff6ff', lineHeight: '1.2' }}>티어</th>
+              <th style={{ ...thStyle, width: '52px', backgroundColor: '#eff6ff', lineHeight: '1.2' }}>매왕<br/>등수</th>
+              <th style={{ ...thStyle, width: '52px', backgroundColor: '#eff6ff', lineHeight: '1.2' }}>컨텐츠<br/>등수</th>
+              <th style={{ ...thStyle, width: '52px', backgroundColor: '#eff6ff', lineHeight: '1.2' }}>티어</th>
               <th style={{ ...thStyle, width: '70px', lineHeight: '1.2' }}>등수 차이<br/><span style={{ fontSize: '9px', fontWeight: 'normal', opacity: 0.8 }}>(매왕/컨텐츠)</span></th>
               <th style={{ ...thStyle, width: '50px' }}>판정</th>
             </>
@@ -173,7 +173,12 @@ export default function ShareButton({
                 <td style={{ ...tdStyle, backgroundColor: '#f0f9ff', fontWeight: 'bold', color: row.isAbsent ? '#94a3b8' : '#2563eb' }}>
                   {row.isAbsent ? '미참' : (row.guildContentRank ?? '-')}
                 </td>
-                <td style={{ ...tdStyle, backgroundColor: '#f0f9ff', fontWeight: 'bold', color: row.isAbsent ? '#94a3b8' : '#2563eb' }}>
+                <td style={{ 
+                  ...tdStyle, 
+                  backgroundColor: !row.isAbsent && isNearTierBoundary(row.contentRank) ? '#ecfccb' : '#f0f9ff', 
+                  fontWeight: 'bold', 
+                  color: row.isAbsent ? '#94a3b8' : (!row.isAbsent && isNearTierBoundary(row.contentRank) ? '#4d7c0f' : '#2563eb')
+                }}>
                   {row.isAbsent ? '-' : (row.contentRank ?? '-')}
                 </td>
                 <td style={{ ...tdStyle, backgroundColor: '#f0f9ff', textAlign: 'center', padding: '4px' }}>
