@@ -1,6 +1,7 @@
 "use client";
 
 import { SheetData, Record } from "@/types";
+import { getTierImage } from "@/lib/tier";
 
 export default function RecordViewer({ 
   contentName,
@@ -40,6 +41,7 @@ export default function RecordViewer({
                     <th className="px-3 sm:px-4 py-4 min-w-[100px] sm:min-w-[120px] max-w-[180px]">캐릭터명</th>
                     <th className="px-2 sm:px-3 py-4 w-14 sm:w-16 text-center leading-tight border-l border-slate-200 dark:border-slate-800 bg-blue-50/50 dark:bg-blue-900/10">매왕<br/>등수</th>
                     <th className="px-2 sm:px-3 py-4 min-w-[80px] sm:w-32 text-center leading-tight bg-blue-50/50 dark:bg-blue-900/10">컨텐츠<br/>등수</th>
+                    <th className="px-2 sm:px-3 py-4 w-14 sm:w-16 text-center leading-tight bg-blue-50/50 dark:bg-blue-900/10">티어</th>
                     <th className="px-1 sm:px-2 py-4 min-w-[90px] text-center leading-tight">등수 차이<br/><span className="text-[10px] opacity-80 decoration-none font-medium">(매왕/컨텐츠)</span></th>
                     <th className="px-2 sm:px-3 py-4 w-14 sm:w-16 text-center">판정</th>
                   </>
@@ -83,6 +85,13 @@ export default function RecordViewer({
                         </td>
                         <td className="px-2 sm:px-3 py-3 text-center font-bold text-blue-600 dark:text-blue-400 bg-blue-50/10 dark:bg-blue-900/5">
                           {isAbsent ? '-' : (row.content_rank ?? '-')}
+                        </td>
+                        <td className="px-2 sm:px-3 py-3 text-center bg-blue-50/10 dark:bg-blue-900/5">
+                          {!isAbsent && getTierImage(row.content_rank) && (
+                            <div className="flex justify-center">
+                              <img src={getTierImage(row.content_rank)!} alt="tier" className="w-7 h-7 sm:w-9 sm:h-9 object-contain" />
+                            </div>
+                          )}
                         </td>
                         <td className="px-1 sm:px-2 py-3 text-center font-bold text-[13px] sm:text-[14px]">
                           {!isAbsent ? (() => {

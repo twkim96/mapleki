@@ -4,6 +4,7 @@ import { useState, useRef, useCallback } from "react";
 import { Camera, Download, Copy, X, Loader2, Check } from "lucide-react";
 import html2canvas from "html2canvas";
 import { Record, SheetData } from "@/types";
+import { getTierImage } from "@/lib/tier";
 
 function getGradeStyle(grade: string): React.CSSProperties {
   if (grade === "양호") return { backgroundColor: "#d1fae5", color: "#047857", fontWeight: "bold" };
@@ -41,10 +42,17 @@ export default function ShareButton({
     return html2canvas(captureRef.current, {
       scale: 2,
       useCORS: true,
+      allowTaint: true,
       backgroundColor: "#ffffff",
       logging: false,
       onclone: (clonedDoc) => {
         clonedDoc.querySelectorAll('style, link[rel="stylesheet"]').forEach(el => el.remove());
+        // 이미지 src를 절대 URL로 교체하여 캡처 시 정상 렌더링 보장
+        clonedDoc.querySelectorAll('img[data-tier]').forEach((el) => {
+          const imgEl = el as HTMLImageElement;
+          const src = imgEl.getAttribute('data-src');
+          if (src) imgEl.src = window.location.origin + src;
+        });
       }
     });
   }, []);
@@ -140,6 +148,7 @@ export default function ShareButton({
               <th style={{ ...thStyle }}>캐릭터명</th>
               <th style={{ ...thStyle, width: '38px', backgroundColor: '#eff6ff', lineHeight: '1.2' }}>매왕<br/>등수</th>
               <th style={{ ...thStyle, width: '48px', backgroundColor: '#eff6ff', lineHeight: '1.2' }}>컨텐츠<br/>등수</th>
+              <th style={{ ...thStyle, width: '44px', backgroundColor: '#eff6ff', lineHeight: '1.2' }}>티어</th>
               <th style={{ ...thStyle, width: '70px', lineHeight: '1.2' }}>등수 차이<br/><span style={{ fontSize: '9px', fontWeight: 'normal', opacity: 0.8 }}>(매왕/컨텐츠)</span></th>
               <th style={{ ...thStyle, width: '50px' }}>판정</th>
             </>
@@ -166,6 +175,17 @@ export default function ShareButton({
                 </td>
                 <td style={{ ...tdStyle, backgroundColor: '#f0f9ff', fontWeight: 'bold', color: row.isAbsent ? '#94a3b8' : '#2563eb' }}>
                   {row.isAbsent ? '-' : (row.contentRank ?? '-')}
+                </td>
+                <td style={{ ...tdStyle, backgroundColor: '#f0f9ff', textAlign: 'center', padding: '4px' }}>
+                  {!row.isAbsent && getTierImage(row.contentRank) && (
+                    <img
+                      data-tier="true"
+                      data-src={getTierImage(row.contentRank)}
+                      src={getTierImage(row.contentRank)!}
+                      alt="tier"
+                      style={{ width: '28px', height: '28px', objectFit: 'contain', display: 'inline-block' }}
+                    />
+                  )}
                 </td>
                 <td style={{ ...tdStyle, ...(row.rankDiff !== null && !row.isAbsent ? { fontWeight: 'bold' } : { color: '#cbd5e1' }) }}>
                   {!row.isAbsent ? (() => {
